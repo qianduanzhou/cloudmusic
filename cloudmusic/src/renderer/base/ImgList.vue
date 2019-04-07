@@ -1,0 +1,131 @@
+<template>
+  <div class="list">
+      <ul class="listContainer">
+          <li :style="{width:listWidth + '%'}" v-if="isRec"><img src="../../../static/logo.jpg"/><p>每日推荐</p></li>
+          <li :style="{width:listWidth + '%'}" v-if="isSinger"><img src="../../../static/singer.jpg"/><p>歌手排行榜</p></li>
+          <li :style="{width:listWidth + '%'}" @click="getId(item.id)"
+          v-for='item in list' :key='item.id'
+          ><img v-lazy="item.picUrl"/>
+            <div class="num" v-if="isRec">
+              <i class="iconfont icon-iconku-zhuanqu-"></i><span>{{item.playCount | count}}</span><b>万</b>
+            </div>
+            <span class="ins">{{item.copywriter}}</span><i class="iconfont icon-bofang play"></i>
+            <p>{{item.name}}</p>
+          </li>
+      </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    listWidth: {
+      type: Number,
+      default: 18
+    },
+    list: {
+      type: Array,
+      default:[]
+    },
+    isRec: {
+      type:Boolean,
+      default:false
+    },
+    isSinger: {
+      type:Boolean,
+      default:false
+    }
+  },
+  filters: {
+    count(value) {
+      return Math.floor(value/10000);
+    }
+  },
+  data() {
+    return {
+
+    }
+  },
+  methods: {
+    getId(id) {
+      this.$emit('getSongList',id)
+    }
+  }
+}
+</script>
+
+<style lang='scss'>
+  .list {
+    width: 100%;
+    .listContainer {
+      width: 100%;
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      li {
+        cursor: pointer;
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        img {
+          width: 100%;
+          border: 1px solid #E1E1E2;
+        }
+        p {
+          padding: 3px;
+          line-height: 20px;
+          font-size: 13px;
+          color:#111111;
+        }
+        .num {
+          position: absolute;
+          padding: 5px;
+          color:white;
+          top:0;
+          right: 0;
+          span {
+            padding-left: 2px;
+            font-size: 12px;
+          }
+          b {
+            font-size: 12px;
+          }
+        }
+        .play {
+          opacity: 0;
+          position: absolute;
+          bottom: 80px;
+          font-size: 26px;
+          color: rgba(0,0,0,0.8);
+          right: 10px;
+          transition: opacity 0.2s ease-in;
+        }
+        /* &:hover .play {
+          opacity: 1;
+          transition: opacity 0.2s ease-in;
+        } */
+        .ins {
+          opacity: 0;
+          font-size: 12px;
+          position: absolute;
+          padding: 7px;
+          line-height: 20px;
+          top: 0;
+          background: rgba(0,0,0,0.5);
+          color: white;
+          overflow:hidden;
+          text-overflow: ellipsis;//显示省略号
+          display:-webkit-box;
+          -webkit-line-clamp:2;//块元素显示的文本行数
+          -webkit-box-orient:vertical;
+          transition: opacity 0.4s ease-in;
+        }
+        /* &:hover .ins {
+          opacity: 1;
+          transition: opacity 0.4s ease-in;
+        } */
+      }
+    }
+  }
+</style>

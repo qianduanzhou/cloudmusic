@@ -1,0 +1,40 @@
+{
+  "comments": false,
+  "env": {
+    "main": {
+      "presets": [
+        ["env", {
+          "targets": { "node": 7 }
+        }],
+        "stage-0"
+      ]
+    },
+    "renderer": {
+      "presets": [
+        ["env", {
+          "modules": false
+        }],
+        "stage-0"
+      ]
+    },
+    "web": {
+      "presets": [
+        ["es2015", { "modules": false }],
+        ["env", {
+          "modules": false
+        }],
+        "stage-0"
+      ]
+    }
+  },
+  "plugins": [
+    "transform-runtime",
+    [
+      "component",
+    {
+      "libraryName": "element-ui",
+      "styleLibraryName": "theme-chalk"
+    }
+    ]
+  ]
+}

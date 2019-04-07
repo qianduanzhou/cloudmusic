@@ -1,0 +1,21 @@
+.alignCenter {
+    display: flex;
+    align-items: center;
+}
+.justCenter {
+    display: flex;
+    justify-content: center;
+}
+.left {
+    display: flex;
+    justify-content: flex-start;
+}
+.right {
+    display: flex;
+    justify-content: flex-end;
+}
+.allCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
