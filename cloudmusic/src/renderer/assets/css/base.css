@@ -19,3 +19,11 @@
     align-items: center;
     justify-content: center;
 }
+.spCenter {
+    display: flex;
+    justify-content: space-between;
+}
+.bgc {
+    background-position: center;
+    background-size: cover;
+}

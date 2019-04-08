@@ -22,7 +22,14 @@
          </li>
        </ul>
     </div>
-    <img-list :list="singList" :listWidth="15" :isSinger="true" ref="list" @getSongList="getSongList"></img-list>
+    <img-list :list="singList" :listWidth="15" :isSinger="true" ref="list" @getSongList="getSongList">
+      <template v-slot:specail>
+        <li style="width:15%;" ><img src="../../../static/singer.jpg"/><p style="font-size:13px;">歌手排行榜</p></li>
+      </template>
+      <template v-slot:img="imgs">
+              <img v-lazy="imgs.imgs.picUrl"/>
+      </template>
+    </img-list>
     <div v-loading="loading" style="height:100px;"></div>
     <router-view/>
   </div>

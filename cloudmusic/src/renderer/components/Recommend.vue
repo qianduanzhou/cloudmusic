@@ -7,21 +7,37 @@
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <img-list :listWidth="18" :list="recList" :isRec="true"></img-list> 
+      <img-list :listWidth="18" :list="recList" :isRec="true">
+        <template v-slot:specail>
+            <li style="width:18%"><img src="../../../static/logo.jpg"/><p style="font-size:13px;">每日推荐</p></li>
+        </template>
+        <template v-slot:img="imgs">
+              <img v-lazy="imgs.imgs.picUrl"/>
+              <div class="num">
+                <i class="iconfont icon-iconku-zhuanqu-"></i><span>{{imgs.imgs.playCount | wan}}</span>
+              </div>
+            <span class="ins">{{imgs.imgs.copywriter}}</span><i class="iconfont icon-bofang play"></i>
+        </template>
+      </img-list> 
       <div class="head">
           <p class="title">独家放送</p>
           <div class="more">
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <img-list :listWidth="32" :list="specialList"></img-list>
+      <img-list :listWidth="32" :list="specialList">
+        <template v-slot:img="imgs">
+              <img v-lazy="imgs.imgs.picUrl"/>
+        </template>
+      </img-list>
       <div class="head">
           <p class="title">最新音乐</p>
           <div class="more">
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <music-list :list="musicList"></music-list>
+      <music-list :list="musicList">
+      </music-list>
 
       <div class="head">
           <p class="title">推荐MV</p>
@@ -29,7 +45,11 @@
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <img-list :listWidth="32" :list="mvList"></img-list>
+      <img-list :listWidth="32" :list="mvList">
+        <template v-slot:img="imgs">
+              <img v-lazy="imgs.imgs.picUrl"/>
+        </template>
+      </img-list>
       <div v-loading="loading" style="height:100px;"></div>
       <footer class="edit">
           <p>现在可以根据个人喜好，自由调整首页栏目顺序啦~</p>

@@ -1,7 +1,7 @@
 <template>
   <div class="singerDetail">
       <header class="singeheader left">
-          <div class="pic" :style = '{ "backgroundImage" : "url("+singerDetail.artist.img1v1Url+")" }'></div>
+          <div class="pic" :style ='{ backgroundImage: `url(${singerDetail.artist.img1v1Url})`}'></div>
           <div class="singInfo">
               <span class="job">歌手</span>
               <p class="name">{{singerDetail.artist.name}}</p>

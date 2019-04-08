@@ -1,16 +1,12 @@
 <template>
   <div class="list">
       <ul class="listContainer">
-          <li :style="{width:listWidth + '%'}" v-if="isRec"><img src="../../../static/logo.jpg"/><p>每日推荐</p></li>
-          <li :style="{width:listWidth + '%'}" v-if="isSinger"><img src="../../../static/singer.jpg"/><p>歌手排行榜</p></li>
+          <slot name="specail"></slot>      
           <li :style="{width:listWidth + '%'}" @click="getId(item.id)"
           v-for='item in list' :key='item.id'
-          ><img v-lazy="item.picUrl"/>
-            <div class="num" v-if="isRec">
-              <i class="iconfont icon-iconku-zhuanqu-"></i><span>{{item.playCount | count}}</span><b>万</b>
-            </div>
-            <span class="ins">{{item.copywriter}}</span><i class="iconfont icon-bofang play"></i>
-            <p>{{item.name}}</p>
+          >
+          <slot name="img" :imgs="item"></slot>
+            <p :style="{'font-size':`${fontsize}px`}">{{item.name}}</p>
           </li>
       </ul>
   </div>
@@ -23,22 +19,13 @@ export default {
       type: Number,
       default: 18
     },
+    fontsize: {
+      type: Number,
+      default: 13
+    },
     list: {
       type: Array,
       default:[]
-    },
-    isRec: {
-      type:Boolean,
-      default:false
-    },
-    isSinger: {
-      type:Boolean,
-      default:false
-    }
-  },
-  filters: {
-    count(value) {
-      return Math.floor(value/10000);
     }
   },
   data() {
@@ -75,8 +62,11 @@ export default {
         p {
           padding: 3px;
           line-height: 20px;
-          font-size: 13px;
-          color:#111111;
+          font-size: 14px;
+          color:#555555;
+          &:hover {
+            color:#111111;
+          }
         }
         .num {
           position: absolute;
@@ -101,10 +91,10 @@ export default {
           right: 10px;
           transition: opacity 0.2s ease-in;
         }
-        /* &:hover .play {
+        &:hover .play {
           opacity: 1;
           transition: opacity 0.2s ease-in;
-        } */
+        }
         .ins {
           opacity: 0;
           font-size: 12px;
@@ -121,10 +111,10 @@ export default {
           -webkit-box-orient:vertical;
           transition: opacity 0.4s ease-in;
         }
-        /* &:hover .ins {
+        &:hover .ins {
           opacity: 1;
           transition: opacity 0.4s ease-in;
-        } */
+        }
       }
     }
   }

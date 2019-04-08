@@ -7,9 +7,10 @@ import error from '../base/404'
 import Singer from  '../components/Singer'
 import SingerDetail from '../components/SingerDetail'
 import SongDetail from '../components/SongDetail'
+import SongList from '../components/SongList'
+
 
 Vue.use(Router)
-
 export default new Router({
   routes: [
     {
@@ -36,6 +37,10 @@ export default new Router({
               component:SingerDetail
             }
           ]
+        },
+        {
+          path:'songlist',
+          component:SongList
         }
       ]
     },

@@ -344,6 +344,7 @@ export default {
         }
         .logoContainer {
             width: 0 0 180px;
+            cursor: pointer;
             .logo {
             display: block;
             width: 22px;

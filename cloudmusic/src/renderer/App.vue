@@ -2,9 +2,7 @@
   <div id="app">
     <music-header></music-header>
     <music-nav></music-nav>
-    <!-- <keep-alive> -->
-      <router-view></router-view>
-    <!-- </keep-alive> -->
+        <router-view></router-view>
     <play-bottom></play-bottom>
   </div>
 </template>
@@ -16,6 +14,11 @@
 
   export default {
     name: 'cloudmusic',
+    data() {
+      return {
+        transitionName: 'slide-right' 
+      }
+    },
     components: {
       MusicHeader,
       MusicNav,
@@ -28,7 +31,9 @@
   @import url('./assets/css/reset');
   @import './assets/iconfont/iconfont.css';
   @import url('./assets/css/base');
+  
   #app {
     background: #FAFAFA;
+    
   }
 </style>

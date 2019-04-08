@@ -161,6 +161,13 @@ Vue.filter('addZero',function(value) {
   return value
 })
 
+Vue.filter('wan',function (value) {
+  if(value/10000 <= 0) {
+    return value
+  }
+  return Math.floor(value / 10000)+'万'
+})
+
 Vue.filter('time',function(value) {
   let seconds = Math.floor(value / 1000 % 60)
   if (seconds / 10 < 1) {
