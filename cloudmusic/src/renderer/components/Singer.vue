@@ -22,7 +22,7 @@
          </li>
        </ul>
     </div>
-    <img-list :list="singList" :listWidth="15" :isSinger="true" ref="list" @getSongList="getSongList">
+    <img-list :list="singList" :listWidth="15" :isSinger="true" ref="list" @getData="getSongList">
       <template v-slot:specail>
         <li style="width:15%;" ><img src="../../../static/singer.jpg"/><p style="font-size:13px;">歌手排行榜</p></li>
       </template>
@@ -180,7 +180,8 @@ export default {
     }
     },
     // 歌曲列表
-    getSongList(id) {
+    getSongList(data) {
+      let id = data.id
       this.$router.push({
         path:`/find/singer/${id}`
       })

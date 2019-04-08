@@ -2,7 +2,7 @@
   <div class="list">
       <ul class="listContainer">
           <slot name="specail"></slot>      
-          <li :style="{width:listWidth + '%'}" @click="getId(item.id)"
+          <li :style="{width:listWidth + '%'}" @click="getData(item)"
           v-for='item in list' :key='item.id'
           >
           <slot name="img" :imgs="item"></slot>
@@ -34,9 +34,10 @@ export default {
     }
   },
   methods: {
-    getId(id) {
-      this.$emit('getSongList',id)
-    }
+    getData(data) {
+      this.$emit('getData',data)
+    },
+
   }
 }
 </script>

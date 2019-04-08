@@ -68,9 +68,10 @@
               <el-pagination
                 style="margin-top:20px;"
                  background
+                 :page-size = "20"
                  layout="prev, pager, next"
                  @current-change = "changePage"
-                 :total="size">
+                 :total="total">
               </el-pagination>
           </section>
           <div class="same">
@@ -138,9 +139,6 @@ export default {
         ]),
         playClass() {
             return this.playing ? 'play' : 'pause'
-        },
-        size() {
-            return this.total / this.limit * 10
         }
     },
     watch: {

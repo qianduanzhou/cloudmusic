@@ -9,7 +9,7 @@
               <li class="content" v-for="item in hotList" :key="item.name" @click="select(item)">{{item.name}}</li>
           </ul>
       </nav>
-      <imgList :listWidth="23" :list="songList">
+      <imgList :listWidth="23" :list="songList" @getData="toSonglistDetail">
           <template v-slot:specail>
               <li style="width:23%"><img src="../../../static/songList.jpg"/><p>精品歌单，倾心推荐，给最懂音乐的你</p></li>
           </template>
@@ -21,6 +21,15 @@
                 <i class="iconfont icon-bofang play"></i>
           </template>
       </imgList>
+      <el-pagination
+        layout="prev, pager, next"
+        :total="total"
+        :page-size = "99"
+        :current-page = "curpage"
+        @current-change = "changePage"
+        style="margin:20px 0 70px 0;padding:2px 240px;"
+        >
+        </el-pagination>
       <div v-if="show" class="drop">
           <dropList :width="540">
               <template v-slot:header>
@@ -28,7 +37,7 @@
                       添加标签
                   </p>
               </template>
-              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单'">
+              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单' ,show=false">
                   全部歌单
               </div>
               <div class="item">
@@ -79,6 +88,7 @@
           </dropList>
       </div>
        <div class="modules" @click="show = false" v-if="show"></div>
+       <router-view/>
   </div>
 </template>
 
@@ -95,7 +105,9 @@ export default {
     data() {
         return {
             show: false,
-            limit:50,
+            limit:99,
+            curpage:1,
+            total:0,
             name:'全部歌单',
             lanList:[],
             styleList:[],
@@ -104,12 +116,23 @@ export default {
             hostList:[],
             hotList:[],
             songList:[],
+            
         }
+    },
+    computed: {
     },
     created() {
         this.initSongListNav()
         this.initSongList()
     },
+    beforeRouteUpdate (to,from,next) {
+    if(to.fullPath != "/find/songlist") {
+      this.songList = []
+    }else{
+      this.initSongList()
+    }
+		next()
+	},
     methods: {
         initSongListNav() {
             axios.get('http://localhost:3000/playlist/catlist').then((result) => {
@@ -146,21 +169,53 @@ export default {
             })
         },
         initSongList() {
+            window.onscroll = () => {
+                if(this.$route.fullPath!="/find/songlist") {
+                        this.songList = []
+                        return 
+                    }
+            }
+            
             axios.get('http://localhost:3000/top/playlist',{
                 params: {
-                    cat:this.name
+                    cat:this.name,
+                    limit:this.limit
                 }
             }).then((result) => {
                 let res= result.data
                 if(res.code === 200) {
                     this.songList = res.playlists
+                    this.total = res.total
                 }
             })
         },
         select(item) {
             this.name = item.name
             this.show = false
+            this.curpage = 1
             this.initSongList()
+        },
+        changePage(index) {
+            let offset = (index-1) * this.limit
+            axios.get('http://localhost:3000/top/playlist',{
+                params:{
+                    offset: offset,
+                    cat:this.name,
+                    limit:this.limit
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    this.songList = res.playlists
+                    document.documentElement.scrollTop = 0
+                }
+            })
+        },
+        toSonglistDetail(data) {
+            let id = data.id
+            this.$router.push({
+                path: `/find/songlist/${id}`,    
+            })
         }
     }
 }

@@ -8,7 +8,7 @@ import Singer from  '../components/Singer'
 import SingerDetail from '../components/SingerDetail'
 import SongDetail from '../components/SongDetail'
 import SongList from '../components/SongList'
-
+import SongListDetail from '../components/SongListDetail'
 
 Vue.use(Router)
 export default new Router({
@@ -40,7 +40,13 @@ export default new Router({
         },
         {
           path:'songlist',
-          component:SongList
+          component:SongList,
+          children: [
+            {
+              path:':id',
+              component:SongListDetail
+            }
+          ]
         }
       ]
     },
