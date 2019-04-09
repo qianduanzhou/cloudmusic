@@ -23,7 +23,22 @@
       <ul class="singerNav">
           <li v-for="(item,index) in navList" :key = "item" @click="cur = index" :class="{'active':cur == index}">{{item}}</li>
       </ul>
-      <album :hotSongs="hotSongs" :show="cur == 0" v-if="hotSongs.length != 0"></album>
+      <div class="album">
+          <album :Songs="hotSongs" :show="cur == 0" v-if="hotSongs.length != 0">
+            <template v-slot:pic>
+                <div class="albumPic"  style="background: url('/static/hotsong.jpg')"></div>
+            </template>
+            <template v-slot:header>
+                <div class="Navheader">
+                        <p class="title">热门50首</p>
+                        <div class="i">
+                            <i class="iconfont icon-shoucanggedan"></i>
+                            <i class="iconfont icon-bofang"></i>
+                        </div>
+                </div>
+            </template>
+        </album>
+      </div>
   </div>
 </template>
 
@@ -175,6 +190,9 @@ export default {
             font-size: 15px;
             color: #333;
         }
+    }
+    .album {
+        margin: 15px 30px 150px 15px;
     }
 }
 </style>

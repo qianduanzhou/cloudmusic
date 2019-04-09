@@ -5,7 +5,7 @@
              <div class="avaCommit">
                  <p class="avator">{{item.user.nickname}}:</p><b class="content">{{item.content}}</b>
                  <div class="timeContainer alignCenter">
-                     <p class="time">{{item.time}}</p>
+                     <p class="time">{{item.time | bigTime}}</p>
                      <div class="likeContainer">
                          <span class="like"><i class="iconfont icon-dianzan1"></i>({{item.likedCount}})</span>
                          <span class="share">分享</span>

@@ -149,33 +149,19 @@ Vue.prototype.$notify = Notification
 Vue.prototype.$message = Message
 
 
-
 Vue.use(VueLazyLoad,{
 loading:"/static/loading-svg/loading-bars.svg"
 })
 
-Vue.filter('addZero',function(value) {
-    if(value / 10 < 1) {
-      return "0" + value
-  }
-  return value
-})
+import * as filters from './common/filters'
 
-Vue.filter('wan',function (value) {
-  if(value/10000 <= 0) {
-    return value
-  }
-  return Math.floor(value / 10000)+'万'
-})
+for(let i in filters) {
+  Vue.filter(i,filters[i])
+}
 
-Vue.filter('time',function(value) {
-  let seconds = Math.floor(value / 1000 % 60)
-  if (seconds / 10 < 1) {
-      seconds = "0" + seconds
-  }
-  let minute = Math.floor(value / 1000 / 60)
-  return `0${minute}:${seconds}`
-})
+
+
+
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios

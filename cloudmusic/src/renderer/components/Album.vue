@@ -1,31 +1,40 @@
 <template>
   <div class="album" v-if="show">
       <!-- <div class="albumPic" :style = '{ "backgroundImage" : "url("+singerDetail.artist.img1v1Url+")" }'></div> -->
-      <div class="albumPic"></div>
-      <div class="songContainer allCenter">
-          <div class="Navheader">
-              <p class="title">热门50首</p>
-              <div class="i">
-                  <i class="iconfont icon-shoucanggedan"></i>
-                  <i class="iconfont icon-bofang"></i>
-              </div>
-          </div>
+      <slot name="pic">
+
+      </slot>
+      
+      <div class="songContainer allCenter"  :style="{width:`${width}%`}">
+          <slot name="header">
+
+          </slot>
+          
           <ul class="songs">
-              <li class="songDetail left alignCenter" v-for="(item,index) in hotSongsc" 
-              :key="index" @dblclick="playsong(index)" @click="songcur = index" :class="{'songActive' : songcur === index || playSongCur === index}">
-                  <span class="index">{{index+1 | addZero}}</span>
+              <li class="songDetail left alignCenter" v-for="(item,index) in Songsc"
+              :key="index" @dblclick="playsong(index)" :class="{'songActive' :currentSong.name == item.name}">
+                  <span class="index" v-if="currentSong.name != item.name">{{index+1 | addZero}}</span>
+                  <span class="index iconfont icon-horn-copy" v-if="currentSong.name == item.name"></span>
                   <i class="love iconfont icon-xinaixin1"></i>
                   <i class="down iconfont icon-xiazai"></i>
-                  <div class="nameContainer left alignCenter">
-                      <p class="songName">{{item.name}}</p>
-                      <p class="songIns" v-if="item.alia">({{item.alia}})</p>
+                  <div class="nameContainer left alignCenter" :style="{width:`${nameWidth}%`}">
+                      <div class="songName alignCenter">{{item.name}}
+                          <p class="songIns" v-if="item.alia">({{item.alia}})</p>
+                      </div>
                       <i class="sq iconfont icon-sq"></i>
                       <i class="play iconfont icon-mv"></i>
                   </div>
-                  <span class="duration">{{item.duration | time}}</span>
+                  <div class="aSinger">
+                      {{item.singer}}
+                  </div>
+                  <div class="aAblum">
+                      {{item.album}}
+                  </div>
+                  <span class="duration" v-if="types === 0">{{item.duration | time}}</span>
+                  <span class="duration" v-if="types === 1" style="text-align:left;">{{item.duration | time}}</span>
               </li>
           </ul>
-          <p class="all" @click.stop="more" v-if="all">查看全部50首></p>
+          <p class="all" @click.stop="more" v-if="all && types ===0" >查看全部50首></p>
       </div>
   </div>
 </template>
@@ -36,7 +45,7 @@ import axios from 'axios'
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 export default {
     props: {
-        hotSongs: {
+        Songs: {
             type: Array,
             default: []
         },
@@ -47,44 +56,59 @@ export default {
         test: {
             type: String,
             default:''
+        },
+        width: {
+            type: Number,
+            default:60
+        },
+        types: {
+            type: Number,
+            default: 0
+        },
+        nameWidth: {
+            type: Number,
+            default: 70
         }
     },
     computed: {
         ...mapGetters([
-            'playList'
-        ])
+            'playList',
+            'currentSong'
+        ]),
+        playCls() {
+            return  ''
+        }
     },
     data() {
         return {
             all: true,
-            songcur: '',
-            playSongCur: ''
         }
     },
     created() {
-        this.hotSongsc = this.hotSongs.slice(0,10)
+        if(this.type == 0) {
+            this.Songsc = this.Songs.slice(0,10)
+        }else {
+            this.Songsc = this.Songs.slice(0)
+        }
     },
     methods: {
         more() {
-            this.hotSongsc = this.hotSongs.slice(0,50)
+            this.Songsc = this.Songs.slice(0,50)
             this.all = false;
         },
         playsong(index) {
             /*标记*/
-            this.playSongCur = index
             let url = ''
             axios.get('http://localhost:3000/song/url',{
                     params: {
-                        id: this.hotSongsc[index].mid
+                        id: this.Songsc[index].mid
                     }
                 }).then((result) => {
                     let res = result.data
                     url = res.data[0].url
-                    console.log(1)
-                    this.hotSongsc[index].url = url
-                    console.log(2)
+                    this.Songsc[index].url = url
                     this.selectPlay({
-                       list:this.hotSongsc,
+                       list:this.Songsc,
                        index:index
                     })
                 })
@@ -101,18 +125,17 @@ export default {
 
 <style lang='scss'>
     .album {
+        font-size: 12px;
         display: flex;
-        margin: 20px 30px 150px 30px;
-        width: 90%;
+        width: 100%;
         .albumPic {
             width: 150px;
             height: 150px;
-            background: url('/static/hotsong.jpg')
+            margin-right: 60px;
         }
         .songContainer {
-            margin-left: 60px;
+            
             display: inline-block;
-            width: 60%;
             .Navheader {
                 display: flex;
                 justify-content: space-between;
@@ -152,6 +175,9 @@ export default {
                         width: 25px;
                         padding-left: 20px;
                     }
+                    .icon-horn-copy {
+                        color:#C62F2F;
+                    }
                     .love {
                         width: 30px;
                         &:hover {
@@ -165,9 +191,19 @@ export default {
                         }
                     }
                     .nameContainer {
-                        width: 70%;
+                        width: 100%;
                         .songName {
+                            width: 100%;
                             color:#333; 
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            .songIns {
+                                color:#333;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-overflow: ellipsis;
+                            }
                         }
                         .sq {
                             font-size: 18px;
@@ -182,6 +218,24 @@ export default {
                             padding: 0 5px;
                             line-height: 15px;
                         }
+                    }
+                    .aSinger {
+                        width: 17%;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                    .aAblum {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        width: 17%;
+                        box-sizing: border-box;
+                        padding-left: 10px;
+                    }
+                    .duration {
+                        width: 10%;
+                        text-align: right;
                     }
                 }
             }

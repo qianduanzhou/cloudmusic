@@ -174,7 +174,8 @@ export default {
                 }
             }
         }
-        .detail {  
+        .detail {
+            width: 50%;
             .name {
                 cursor: pointer;
                 font-size: 12px;
