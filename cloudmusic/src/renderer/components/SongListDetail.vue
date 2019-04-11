@@ -22,10 +22,13 @@
               </div>
               <div class="controlContainer alignCenter">
                   <div class="item alignCenter">
-                      <i class="iconfont icon-bofang"></i><p>播放全部</p><i class="add">+</i>
+                      <i class="iconfont icon-bofang" @click="playAll"></i><p @click="playAll">播放全部</p><i class="add">+</i>
                   </div>
-                  <div class="item alignCenter">
+                  <div class="item alignCenter" :plain="true" @click="collect" v-if="!isCollect">
                       <i class="iconfont icon-shoucanggedan"></i><p>收藏({{detail.subscribedCount}})</p>
+                  </div>
+                  <div class="item alignCenter" v-if="isCollect" @click="canCollect" :plain="true">
+                      <i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i><p>已收藏({{detail.subscribedCount}})</p>
                   </div>
                   <div class="item alignCenter">
                        <i class="iconfont icon-fenxiang"></i><p>分享({{detail.shareCount}})</p>
@@ -65,6 +68,7 @@
           <div class="tableItem tAlbum">专辑</div>
           <div class="tableItem tDuration">时长</div>
       </div>
+      
       <album :Songs="songList" :show="cur == 0" :types="1" :width='100' :nameWidth="28" v-if="songList.length > 0">
 
       </album>
@@ -75,6 +79,7 @@
 <script>
 import axios from 'axios'
 import {createSong} from '../common/song'
+import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../components/Album'
 
 export default {
@@ -99,11 +104,18 @@ export default {
         this.initSongListDetail()
     },
     computed: {
+        ...mapGetters([
+           'collectSongList' 
+        ]),
         showCls() {
             return this.wordHide?'icon-down':'icon-shang'
         },
         dropCls() {
             return this.wordHide?'up':'drop'
+        },
+        isCollect() {
+            let id = parseInt(this.$route.params.id)
+            return this.collectSongList.includes(id)
         }
     },
     methods: {
@@ -147,7 +159,72 @@ export default {
                 ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
             }
             return ret
-        }
+        },
+        playAll() {
+            /*标记*/
+            let url = ''
+            let index = Math.ceil(Math.random() * (this.songList.length-1))
+            axios.get('http://localhost:3000/song/url',{
+                    params: {
+                        id: this.songList[index].mid
+                    }
+                }).then((result) => {
+                    let res = result.data
+                    url = res.data[0].url
+                    this.songList[index].url = url
+                    this.selectPlay({
+                       list:this.songList,
+                       index:index
+                    })
+                })
+        },
+        collect() {
+            let id = parseInt(this.$route.params.id)
+            axios.get('http://localhost:3000/playlist/subscribe',{
+                params: {
+                    t: 1,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSongList.slice(0)
+                collectList.push(id)
+                this.set_collectSongList(collectList)
+            })
+            this.$message({
+                message:'收藏成功',
+                center: true
+            });
+        },
+        canCollect() {
+            let id = parseInt(this.$route.params.id)
+            axios.get('http://localhost:3000/playlist/subscribe',{
+                params: {
+                    t: 2,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSongList.slice(0)
+                let index = collectList.findIndex((item) => {
+                    return item == id
+                })
+                collectList.splice(index,1)
+                this.set_collectSongList(collectList)
+            })
+            this.$message({
+                message:'取消收藏成功',
+                center: true
+            });
+        },
+        ...mapActions([
+            'selectPlay'
+        ]),
+        ...mapMutations({
+           set_collectSongList:'SET_COLLECTSONGLIST'
+        })
     }
 }
 </script>
@@ -193,10 +270,10 @@ export default {
                     padding: 0 10px;
                     border-left: 1px solid #E1E1E2;
                     position: absolute;
-                    right: 230px;
+                    right: 210px;
                     &:nth-of-type(1){
                         border-left:none;
-                        right: 290px;
+                        right: 270px;
                     }
                     .num {
                         float: right;
@@ -333,7 +410,6 @@ export default {
         }
     }
     .songListMain {
-        margin-top: 50px;
         .songListNav {
             margin-left: 30px;
             .Navitem {

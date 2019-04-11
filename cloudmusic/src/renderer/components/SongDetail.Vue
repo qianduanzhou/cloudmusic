@@ -315,6 +315,7 @@ export default {
     }
     &::-webkit-scrollbar-thumb {
         -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        border-radius: 10px;
         background: #BCBDC1;
     }
     &::-webkit-scrollbar-track {

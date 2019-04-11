@@ -4,12 +4,23 @@ const mutations = {
     [types.SET_USERNAME](state,userName) {
         state.userInfo.userName = userName
     },
+    [types.SET_PASSWORD](state,password) {
+        state.userInfo.password = password
+    },
     [types.SET_NICKNAME](state,nickName) {
         state.userInfo.nickName = nickName
     },
     [types.SET_AVATARURL](state,avatarUrl) {
         state.userInfo.avatarUrl = avatarUrl
     },
+    [types.SET_COLLECTSONGLIST](state,collectSongList) {
+        state.userInfo.collectSongList = collectSongList
+    },
+    [types.SET_COLLECTSONG](state,collectSong) {
+        state.userInfo.collectSong = collectSong
+    },
+
+
     [types.SET_SINGER](state,singer) {
         state.songs.singer = singer
     },
@@ -33,6 +44,9 @@ const mutations = {
     },
     [types.SET_AUDIO](state,audio) {
         state.songs.audio = audio
+    },
+    [types.SET_PLAYHISTORYLIST](state,playHistoryList) {
+        state.songs.playHistoryList = playHistoryList
     }
 }
 

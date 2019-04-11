@@ -15,8 +15,8 @@
               :key="index" @dblclick="playsong(index)" :class="{'songActive' :currentSong.name == item.name}">
                   <span class="index" v-if="currentSong.name != item.name">{{index+1 | addZero}}</span>
                   <span class="index iconfont icon-horn-copy" v-if="currentSong.name == item.name"></span>
-                  <i class="love iconfont icon-xinaixin1"></i>
-                  <i class="down iconfont icon-xiazai"></i>
+                  <i class="love iconfont icon-xinaixin1" v-if="types!=3 && types!=4"></i>
+                  <i class="down iconfont icon-xiazai" v-if="types!=3 && types!=4"></i>
                   <div class="nameContainer left alignCenter" :style="{width:`${nameWidth}%`}">
                       <div class="songName alignCenter">{{item.name}}
                           <p class="songIns" v-if="item.alia">({{item.alia}})</p>
@@ -24,13 +24,13 @@
                       <i class="sq iconfont icon-sq"></i>
                       <i class="play iconfont icon-mv"></i>
                   </div>
-                  <div class="aSinger">
+                  <div class="aSinger"  v-if="types === 1 || types === 3 || types === 4">
                       {{item.singer}}
                   </div>
-                  <div class="aAblum">
+                  <div class="aAblum" v-if="types === 1">
                       {{item.album}}
                   </div>
-                  <span class="duration" v-if="types === 0">{{item.duration | time}}</span>
+                  <span class="duration" v-if="types === 0 || types === 3 || types === 4">{{item.duration | time}}</span>
                   <span class="duration" v-if="types === 1" style="text-align:left;">{{item.duration | time}}</span>
               </li>
           </ul>
@@ -85,7 +85,7 @@ export default {
         }
     },
     created() {
-        if(this.type == 0) {
+        if(this.types == 0) {
             this.Songsc = this.Songs.slice(0,10)
         }else {
             this.Songsc = this.Songs.slice(0)
@@ -97,9 +97,20 @@ export default {
             this.all = false;
         },
         playsong(index) {
-            /*标记*/
             let url = ''
-            axios.get('http://localhost:3000/song/url',{
+            if(this.types === 4) {
+                axios.get('http://localhost:3000/song/url',{
+                    params: {
+                        id: this.Songsc[index].mid
+                    }
+                }).then((result) => {
+                    let res = result.data
+                    url = res.data[0].url
+                    this.Songsc[index].url = url
+                    this.insertSong(this.Songsc[index])
+                })
+            }else {
+                axios.get('http://localhost:3000/song/url',{
                     params: {
                         id: this.Songsc[index].mid
                     }
@@ -112,9 +123,14 @@ export default {
                        index:index
                     })
                 })
+            }
+            /*标记*/
+            
+            
         },
         ...mapActions([
-            'selectPlay'
+            'selectPlay',
+            'insertSong'
         ]),
         ...mapMutations({
             setPlayList:'SET_PLAYLIST'
@@ -131,7 +147,7 @@ export default {
         .albumPic {
             width: 150px;
             height: 150px;
-            margin-right: 60px;
+            margin-right: 30px;
         }
         .songContainer {
             
@@ -199,7 +215,7 @@ export default {
                             white-space: nowrap;
                             text-overflow: ellipsis;
                             .songIns {
-                                color:#333;
+                                color:#888888;
                                 overflow: hidden;
                                 white-space: nowrap;
                                 text-overflow: ellipsis;

@@ -6,7 +6,11 @@ export const SET_NICKNAME = 'SET_NICKNAME'
 
 export const SET_AVATARURL = 'SET_AVATARURL'
 
+export const SET_PASSWORD = 'SET_PASSWORD'
 
+export const SET_COLLECTSONGLIST = 'SET_COLLECTSONGLIST'
+
+export const SET_COLLECTSONG = 'SET_COLLECTSONG'
 
 //  歌曲
 export const SET_SINGER = 'SET_SINGER'
@@ -24,3 +28,5 @@ export const SET_PLAY_MODE = 'SET_PLAY_MODE'
 export const SET_CURRENT_INDEX = 'SET_CURRENT_INDEX'
 
 export const SET_AUDIO = 'SET_AUDIO'
+
+export const SET_PLAYHISTORYLIST = 'SET_PLAYHISTORYLIST'

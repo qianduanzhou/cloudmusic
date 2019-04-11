@@ -27,3 +27,21 @@
     background-position: center;
     background-size: cover;
 }
+
+/* .scrollStyle {
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        border-radius: 10px;
+        background: rgba(236,236,236,1);
+        &:hover {
+          background: #CFCFD1;
+        }
+    }
+    &::-webkit-scrollbar-track {
+        border-right:1px solid rgba(100,100,100,.2);
+        background: rgba(188,188,188,.1);
+    }
+} */

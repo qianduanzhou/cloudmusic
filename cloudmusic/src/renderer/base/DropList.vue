@@ -21,7 +21,7 @@ export default {
 .droplist {
     position: absolute;
     width: 280px;
-    height: 370px;
+    height: 100%;
     overflow:auto;
     border: 1px solid #ccc;
     border-radius: 5px;

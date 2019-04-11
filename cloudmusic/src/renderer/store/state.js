@@ -2,7 +2,10 @@ const state = {
     userInfo:{
         userName:'',
         nickName:'',
-        avatarUrl:''
+        password:'',
+        avatarUrl:'',
+        collectSongList:[],
+        collectSong:[]
     },
     songs:{
         singer: {},
@@ -10,6 +13,7 @@ const state = {
         fullScreen: false,
         playList: [],
         sequenceList: [],
+        playHistoryList: [],
         mode: 'sequence',
         currentIndex: -1,
         audio:{}

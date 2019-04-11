@@ -12,7 +12,7 @@ export default {
 
 <style lang='scss'>
 .error {
-    margin: 100px 0 0 400px;
+    margin: 100px 0 0 200px;
     margin-top: 50px;
     h1 {
         font-size: 300px;

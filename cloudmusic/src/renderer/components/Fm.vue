@@ -12,7 +12,5 @@ export default {
 
 <style lang='scss'>
 .fm {
-    margin-left: 200px;
-    margin-top: 50px;
 }
 </style>

@@ -4,12 +4,12 @@
           <i class="logo"></i>
           <p class="name">网易云音乐</p>
       </div>
-      <div class="searchContainer">
+      <div class="searchContainer" style="-webkit-app-region: drag;">
           <span class="prev iconfont icon-zuo" @click="prev" :class="{'active':true}" style="-webkit-app-region: no-drag;"></span><span class="next iconfont icon-you" style="-webkit-app-region: no-drag;" :class="{'active':true}" @click="next" ></span>
           <input type="text" placeholder="搜索音乐，视频，歌词，电台" style="-webkit-app-region: no-drag;">
           <i class="iconfont icon-sousuo" style="-webkit-app-region: no-drag;"></i>
       </div>
-      <div class="headerNav alignCenter">
+      <div class="headerNav alignCenter" style="-webkit-app-region: drag;">
           <i class="iconfont icon-geren" style="-webkit-app-region: no-drag;" v-show="!userName"></i>
           <img class="userimg" :src="avatarUrl" v-show="userName"/>
           <p class="state" style="-webkit-app-region: no-drag;" @click.stop="dialogVisible = true" v-show="!userName">未登录</p>
@@ -32,7 +32,7 @@
         width="30%"
         :before-close="handleClose">
         <span class="iphone">手机号：</span><input type="text" class="username" v-model="username" placeholder="请输入手机号"> <br>
-        <span class="pass">密&nbsp;&nbsp;&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keydown="login">
+        <span class="pass">密&nbsp;&nbsp;&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keyup.enter="login">
         <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="login">确 定</el-button>
@@ -85,7 +85,7 @@
 <script>
 import axios from 'axios'
 import DropList from '../base/DropList'
-
+import {createSong} from '../common/song'
 
 import {mapMutations,mapGetters,mapState} from 'vuex'
 
@@ -100,6 +100,7 @@ export default {
             dialogVisible: false,
             logoutVisible: false,
             drap:false,
+            id:'',
             username:'',
             password:''
         }
@@ -108,18 +109,17 @@ export default {
         ...mapGetters([
             'userName',
             'nickName',
-            'avatarUrl'
+            'avatarUrl',
+            'collectSongList',
+            'playHistoryList'
         ])
     }, 
     components: {
         DropList
     },
-    mounted() {
-        if(!this.userName) {
-            this.setUserName(localStorage.getItem("userName"))
-            this.setNickName(localStorage.getItem("nickName"))
-            this.setAvatarUrl(localStorage.getItem("avatarUrl"))
-        }
+    created() {
+        this.checkLogin()
+        
     },
     methods: {
         // 最小化窗口
@@ -154,29 +154,124 @@ export default {
         tofind() {
             this.$router.push('/find')
         },
-        // 登录
-        login() {
-            axios.get('http://localhost:3000/login/cellphone',{
+        // 检查登录状态
+        async checkLogin() {
+            if(!localStorage.getItem("username")) {
+                return
+            }
+            await axios.get('http://localhost:3000/login/cellphone',{
                 params: {
-                    phone: this.username,
-                    password: this.password
-                }
+                    phone: localStorage.getItem("username"),
+                    password: localStorage.getItem("password"),
+                    timestamp: (new Date()).getTime()
+                },
             }).then((result) => {
                 let res = result.data
                 if(res.code == 200) {
-                    this.setUserName(res.account.userName);
+                    this.id = res.account.id
+                    this.setUserName(localStorage.getItem("username"),);
+                    this.setPassword(localStorage.getItem("password"));
                     this.setNickName(res.profile.nickname);
                     this.setAvatarUrl(res.profile.avatarUrl);
-                    localStorage.setItem("userName", this.userName);
-                    localStorage.setItem("nickName", this.nickName);
-                    localStorage.setItem("avatarUrl", this.avatarUrl);
+
                     this.username = '';
                     this.password = '';
                 }    
             }).catch(()=>{
                 alert('手机号或者密码错误')
             })
+            this.initCollectSongList()
+            this.initHistory()
+        },
+
+
+        // 登录
+        async login() {
+            await axios.get('http://localhost:3000/login/cellphone',{
+                params: {
+                    phone: this.username,
+                    password: this.password,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    this.id = res.account.id
+                    this.setUserName(this.username)
+                    this.setPassword(this.password)
+                    this.setNickName(res.profile.nickname)
+                    this.setAvatarUrl(res.profile.avatarUrl)
+
+
+                    localStorage.setItem("username", this.username)
+                    localStorage.setItem("nickName", this.nickName)
+                    localStorage.setItem("avatarUrl", this.avatarUrl)
+                    localStorage.setItem("password", this.password)
+                    this.username = ''
+                    this.password = ''
+                }    
+            }).catch(()=>{
+                alert('手机号或者密码错误')
+                this.username = ''
+                this.password = ''
+            })
+
+            this.initCollectSongList()
+
+            this.initHistory()
+
             this.dialogVisible = false
+        },
+
+        //  查看用户歌单
+        initCollectSongList() {
+            axios.get('http://localhost:3000/user/playlist',{
+                params: {
+                    uid: this.id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    let ret = []
+                    res.playlist.forEach((item) => {
+                        ret.push(item.id)
+                    })
+                    this.set_collectSongList(ret)
+                }
+            })
+        },
+
+        // 初始化播放历史
+        initHistory() {
+            axios.get('http://localhost:3000/user/record',{
+                params: {
+                    uid:this.id,
+                    type:1
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    
+                    this._normalizeSongs(res.weekData)
+                }
+            })
+        },
+        _normalizeSongs(list) {
+            let ret = []
+            for(let i = 0; i < list.length; i ++) {
+                let id = list[i].song.ar[0].id
+                let mid = list[i].song.id
+                let singer = list[i].song.ar[0].name
+                let name = list[i].song.name
+                let album = list[i].song.al.name
+                let duration = list[i].song.dt
+                let picUrl = list[i].song.al.picUrl
+                let alia = list[i].song.alia[0]
+                let url = ''
+                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+            }
+            this.setPlayHistoryList(ret)
+            return ret
         },
         // 展示下拉框
         showDrap() {
@@ -190,9 +285,11 @@ export default {
                     this.setUserName('')
                     this.setNickName('')
                     this.setAvatarUrl('')
-                    localStorage.setItem("userName", '');
+                    this.setPassword('')
+                    localStorage.setItem("username", '');
                     localStorage.setItem("nickName", '');
                     localStorage.setItem("avatarUrl", '');
+                    localStorage.setItem("password", '');
                     this.drap = false;
                     this.logoutVisible = false
                 }
@@ -201,7 +298,10 @@ export default {
         ...mapMutations({
             setUserName: 'SET_USERNAME',
             setNickName: 'SET_NICKNAME',
-            setAvatarUrl: 'SET_AVATARURL'
+            setAvatarUrl: 'SET_AVATARURL',
+            setPassword: 'SET_PASSWORD',
+            set_collectSongList:'SET_COLLECTSONGLIST',
+            setPlayHistoryList:'SET_PLAYHISTORYLIST'
         })
     }
 }
@@ -233,6 +333,7 @@ export default {
             cursor: pointer;
             position: absolute;
             top: 50px;
+            height:370px;
             right: 440px;
             opacity: 1;
             &::before {

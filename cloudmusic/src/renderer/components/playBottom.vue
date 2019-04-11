@@ -1,5 +1,5 @@
 <template>
-  <div class="bottom alignCenter">
+  <div class="bottom alignCenter" ref="bottom">
     <div class="playControl">
       <i class="iconfont icon-shangyishou prev" @click="prev"></i>
       <i class="iconfont palyClass play" :class="palyClass" @click="playState"></i>
@@ -28,18 +28,64 @@
     <div class="other alignCenter">
       <i class="iconfont mode" :class="[modeClass]" @click="changeMode"></i>
       <i class="iconfont icon-geci word"></i>
-      <div class="listContainer alignCenter">
+      <div class="listContainer alignCenter" @click="showDrop=!showDrop">
         <i class="iconfont icon-bofangliebiao list" ></i>
-        <span class="num">50</span>
+        <span class="num">{{playList.length}}</span>
       </div>
     </div>
-    <audio ref="audio" :src="currentSong.url" @timeupdate="updateTime" @ended="end" autoplay></audio>
+    <audio ref="audio" :src="currentSong.url" @timeupdate="updateTime" @ended="end" autoplay>
+
+    </audio>
+    <div class="dropListContainer" v-if="showDrop">
+      <dropList :width="580">
+          <template v-slot:header>
+              <div class="bplayContainer allCenter">
+                  <div class="bplayItem" :class="{'active':activeCur== 'playList'}"
+                  @click="activeCur ='playList'"
+                  >
+                    播放列表
+                    </div>
+                  <div class="bplayItem" :class="{'active':activeCur== 'playHistory'}"
+                  @click="activeCur ='playHistory'"
+                  >
+                    历史记录
+                    </div>
+              </div>
+          </template>
+          <div class="bDetail spCenter alignCenter">
+            <p class="bNum">共{{sequenceList.length}}首</p>
+            <div class="bControl alignCenter">
+              <div class="bCollection">
+                <i class="iconfont icon-shoucanggedan"></i>
+                <span class="bcol">收藏全部</span>
+              </div>
+              <div class="bClear">
+                <i class="iconfont icon-lajixiang"></i>
+                <span class="bcle">清空</span>
+              </div>
+            </div>
+          </div>
+          <div class="albumContainer">
+            <album :Songs="sequenceList" :types="3" :width='100' :nameWidth="55" :show="activeCur == 'playList'">
+              
+            </album>
+            <album :Songs="playHistoryList" :types="4" :width='100' :nameWidth="55" :show="activeCur == 'playHistory'">
+              
+            </album>
+          </div>
+            
+      </dropList>
+    </div>
+    <div class="modules" @click="showDrop = false" v-show="showDrop" ref="modules"></div>
   </div>
 </template>
 
 <script>
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 import axios from 'axios'
+import DropList from '../base/DropList'
+import Album from '../components/Album'
+
 const offSetLeft = 250
 const boxWidth = 12
 
@@ -48,8 +94,10 @@ export default {
     return {
       timeWidth: 0,
       time: 0,
+      activeCur:'playList',
       currentTime:0,
       timeSchedule:0,
+      showDrop:false,
       mode:[
         'sequence',
         'random',
@@ -62,8 +110,10 @@ export default {
     ...mapGetters([
       'currentSong',
       'playList',
+      'sequenceList',
       'currentIndex',
       'playing',
+      'playHistoryList'
     ]),
     modeClass() {
       switch (this.nowMode) {
@@ -87,6 +137,10 @@ export default {
       return this.currentTime * 1000/this.currentSong.duration
     }
   },
+  components: {
+    DropList,
+    Album
+  },
   watch: {
     currentTime(newVal) {
       // this.$refs.box.style.left = this.percent * this.timeWidth - boxWidth/2 + 'px'
@@ -100,11 +154,24 @@ export default {
          this.timeSchedule = (newVal / this.timeWidth)*100
     }
   },
-  updated() {
-    this.timeWidth = this.$refs.timeContainer.offsetWidth
-  },
   mounted() {
     this.setAudio(this.$refs.audio)
+
+    this.timeWidth = this.$refs.timeContainer.offsetWidth
+    this.$refs.modules.style.height = document.documentElement.clientHeight - this.$refs.bottom.clientHeight
+
+
+    window.onresize = () => {
+      this.timeWidth = this.$refs.timeContainer.offsetWidth
+      setTimeout(() => {
+        this.$refs.modules.style.height = document.documentElement.clientHeight - this.$refs.bottom.clientHeight
+        console.log(this.$refs.modules.style.height)
+      }, 200);
+      this.$nextTick(() => {
+        
+      })
+      
+    }
   },
   filters: {
     songTime(value) {
@@ -166,11 +233,24 @@ export default {
     },
     changeMode() {
       this.nowMode = this.nowMode == this.mode[0] ? this.mode[1] : this.nowMode == this.mode[1] ? this.mode[2] : this.mode[0]
+
       this.setPlayMode(this.nowMode)
-      this.selectPlay({
-        list:this.playList,
-        index:this.currentIndex
+
+      let index = this.sequenceList.findIndex((item) => {
+         return item == this.currentSong
       })
+
+      if(this.nowMode == this.mode[2]) {
+          this.setCurrentIndex(index)
+          this.setPlayList(this.sequenceList)
+        return
+      }else {
+        this.selectPlay({
+                list:this.sequenceList,
+                index:this.currentIndex
+              })
+      }
+      
     },
     end() {
       this.setPlayState(true)
@@ -189,14 +269,18 @@ export default {
         return 
       }
       this.setPlayState(true)
-      let url = ''
-      if(this.playList === 1) {
+      if(this.playList === 1 || this.nowMode === this.mode[2]) {
         this.loop()
-      }else {
+      }else if(this.nowMode === this.mode[0]) {
         let index = this.currentIndex + 1
         if(index === this.playList.length) {
           index = 0
         }
+        this.setPlayList(this.sequenceList)
+        this._getUrl(this.playList[index].mid,index)
+      }else{
+        let index = this.currentIndex
+        this.setPlayList(this.sequenceList)
         /*标记*/
         this._getUrl(this.playList[index].mid,index)
       }
@@ -206,13 +290,19 @@ export default {
         return 
       }
       this.setPlayState(true)
-      if(this.playList === 1) {
+      if(this.playList === 1  || this.nowMode === this.mode[2]) {
         this.loop()
-      }else {
+      }else if(this.nowMode === this.mode[0]) {
         let index = this.currentIndex - 1
-        if(index === -1) {
-          index = this.playList.length-1
+        if(index === - 1) {
+          index = this.playList.length - 1
         }
+        this.setPlayList(this.sequenceList)
+        this._getUrl(this.playList[index].mid,index)
+      }else {
+        /*标记*/
+        let index = this.currentIndex
+        this.setPlayList(this.sequenceList)
         /*标记*/
         this._getUrl(this.playList[index].mid,index)
       }
@@ -231,12 +321,12 @@ export default {
       }
     },
     _getUrl(mid,index) {
-      if(this.playList[index].url) {
-        let list = this.playList.slice(0)
-        this.setPlayList(list)
-        this.setCurrentIndex(index)
-        return 
-      }
+      // if(this.playList[index].url) {
+      //   let list = this.playList.slice(0)
+      //   this.setPlayList(list)
+      //   this.setCurrentIndex(index)
+      //   return 
+      // }
       axios.get('http://localhost:3000/song/url',{
         params: {
             id: mid
@@ -246,12 +336,14 @@ export default {
             let url = res.data[0].url
             let list = this.playList.slice(0)
             list[index].url = url   
-            this.setPlayList(list)
-            this.setCurrentIndex(index)
+            this.selectPlay({
+              list:this.sequenceList,
+              index:index
+            })
         })
     },
     ...mapActions([
-      'selectPlay'
+      'selectPlay',
     ]),
     ...mapMutations({
       setCurrentIndex:'SET_CURRENT_INDEX',
@@ -266,6 +358,14 @@ export default {
 
 <style lang='scss'>
 .bottom {
+    .modules {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 99;
+            height: 630px;
+        }
     position: fixed;
     z-index: 1000;
     bottom: 0;
@@ -394,6 +494,82 @@ export default {
           margin-right: 10px;
         }
       }
+    }
+    .dropListContainer  {
+      position: absolute;
+      right: 0;
+      height: 470px;
+      top: -470px;
+      width: 580px;
+      .bplayContainer {
+        width: 100%;
+        height: 40px;
+        border-bottom: 1px solid #E1E1E2;
+        .bplayItem {
+          font-size: 14px;
+          padding: 5px 30px;
+          border-top: 1px solid #E1E1E2;
+          border-bottom: 1px solid #E1E1E2;
+          color: #555555;
+          cursor: pointer;
+          &:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            border-right: 1px solid #E1E1E2;
+            border-left: 1px solid #E1E1E2;
+          }
+          &:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            border-right: 1px solid #E1E1E2;
+          }
+          &.active {
+            background: #7C7D85;
+            color:#f1f1f1;
+          }
+        }
+      }
+      .bDetail {
+        width: 100%;
+        height: 30px;
+        color: #666666;
+        font-size: 13px;
+        border-bottom: 1px solid #EBECED;
+        .bNum {
+          padding: 5px 20px;
+        }
+        .bCollection {
+          padding-right: 10px;
+          border-right: 1px solid #E1E1E2;
+          .icon-shoucanggedan {
+            font-size: 15px;
+          }
+        }
+        .bClear {
+          padding-left: 10px;
+          padding-right: 20px;
+        }
+      }
+      .albumContainer {
+        height:390px; 
+        overflow:hidden;
+        overflow-y: scroll;
+        &::-webkit-scrollbar {
+        width: 10px;
+        }
+        &::-webkit-scrollbar-thumb {
+            -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            background: rgba(236,236,236,1);
+            &:hover {
+              background: #CFCFD1;
+            }
+        }
+        &::-webkit-scrollbar-track {
+            border-right:1px solid rgba(100,100,100,.2);
+            background: rgba(188,188,188,.1);
+        }
+          }
     }
 }
 </style>

@@ -261,6 +261,7 @@ export default {
     .drop {
         position: absolute;
         top: 104px;
+        height: 420px;
         &::before {
             content:'';
             background: #FAFAFA;

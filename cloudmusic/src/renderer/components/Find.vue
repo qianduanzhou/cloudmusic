@@ -36,10 +36,8 @@ export default {
 @media screen and (min-width:670px){
 .find {
     position: relative;
-    margin-left: 200px;
     box-sizing: border-box;
     padding: 0 30px 0 30px;
-    margin-top: 50px;
     .navContainer {
         border-bottom: 1px solid #E1E1E2;
         li {
