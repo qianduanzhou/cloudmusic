@@ -1,5 +1,5 @@
 <template>
-  <div class="SongListDetail">
+  <div class="SongListDetail" ref="SongListDetail" style="width: 100%;height: 100%;">
       <header class="SongListDetailHeader">
           <div class="listPic bgc" :style="{backgroundImage:`url(${detail.coverImgUrl})`}"></div>
           <div class="listDetailContainer">
@@ -11,7 +11,7 @@
                       <p class="num">{{detail.trackCount}}</p>
                   </div>
                   <div class="numData">
-                      <p class="title">贝复舒</p>
+                      <p class="title">播放数</p>
                       <p class="num">{{detail.playCount | wan}}</p>
                   </div>
               </div>
@@ -25,10 +25,10 @@
                       <i class="iconfont icon-bofang" @click="playAll"></i><p @click="playAll">播放全部</p><i class="add">+</i>
                   </div>
                   <div class="item alignCenter" :plain="true" @click="collect" v-if="!isCollect">
-                      <i class="iconfont icon-shoucanggedan"></i><p>收藏({{detail.subscribedCount}})</p>
+                      <i class="iconfont icon-shoucanggedan"></i><p>收藏({{collectNum}})</p>
                   </div>
                   <div class="item alignCenter" v-if="isCollect" @click="canCollect" :plain="true">
-                      <i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i><p>已收藏({{detail.subscribedCount}})</p>
+                      <i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i><p>已收藏({{collectNum}})</p>
                   </div>
                   <div class="item alignCenter">
                        <i class="iconfont icon-fenxiang"></i><p>分享({{detail.shareCount}})</p>
@@ -40,7 +40,7 @@
               <div class="tagcontainer alignCenter">
                   <p class="title">标签</p>
                   <div class="tagcontents">
-                    <span class="tagcontent" v-for="item in detail.tags" :key="item"><b class="tag">{{item}}</b>/</span>
+                    <span class="tagcontent" v-for="item in detail.tags" :key="item">&nbsp;<b class="tag">{{item}}</b>&nbsp;/</span>
                   </div>  
               </div>
               <div class="abstruct spCenter" :class="dropCls">
@@ -56,12 +56,12 @@
           <nav class="songListNav alignCenter">
               <div v-for="(item,index) in navList" :key = "item" @click="cur = index" class="Navitem" :class="{'NavActive':cur == index}">{{item}}</div>
           </nav>
-          <div class="searchSong">
-              <input type="text" class="searchBox" placeholder="搜索歌单音乐">
-              <i class="iconfont icon-sousuo"></i>
+          <div class="searchSong" v-if="cur == 0">
+              <input type="text" class="searchBox" placeholder="搜索歌单音乐" v-model="searchContent" @keyup="search">
+              <i class="iconfont icon-sousuo" @click="search"></i>
           </div>
       </main>
-      <div class="table alignCenter">
+      <div class="table alignCenter" v-if="cur == 0">
           <div class="tableItem tControl">操作</div>
           <div class="tableItem tMusicTitle">音乐标题</div>
           <div class="tableItem tSinger">歌手</div>
@@ -69,10 +69,34 @@
           <div class="tableItem tDuration">时长</div>
       </div>
       
-      <album :Songs="songList" :show="cur == 0" :types="1" :width='100' :nameWidth="28" v-if="songList.length > 0">
+      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songListc">
 
       </album>
-      <div style="margin-bottom: 200px;"></div>
+
+      <div class="sldCommentContainer" v-if="cur == 1">
+          <input class="sldComment" type="text" v-model="commentContent"/>
+          <div class="slcConmentIcon">
+              <i class="iconfont icon-xiaolian"></i>
+              <i class="iconfont">@</i>
+              <i class="iconfont">#</i>
+          </div>
+      </div>
+      
+      <div class="comContainer" v-if="cur == 1">
+          <p class="comtitle" ref = 'comment'>
+              精彩评论
+          </p>
+          <comment :list="commentList"></comment>
+          <el-pagination
+            style="margin:20px 0 50px 50%;transform:translateX(-50%)"
+            background
+            :page-size = "20"
+            layout="prev, pager, next"
+            @current-change = "changePage"
+            :total="total">
+        </el-pagination>
+      </div>
+      
   </div>
 </template>
 
@@ -81,13 +105,21 @@ import axios from 'axios'
 import {createSong} from '../common/song'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../components/Album'
+import Comment from '../base/comment'
 
 export default {
     data() {
         return {
             description : [],
             songList : [],
+            songListc : [],
+            commentList:[],
             detail: {},
+            collectNum:0,
+            limit:20,
+            total:0,
+            searchContent:'',
+            commentContent:'',
             wordHide: true,
             cur:0,
             navList: [
@@ -98,9 +130,11 @@ export default {
        }
     },
     components: {
-        Album
+        Album,
+        Comment
     },
-    created() {
+    mounted() {
+        this.init()
         this.initSongListDetail()
     },
     computed: {
@@ -119,6 +153,17 @@ export default {
         }
     },
     methods: {
+        
+        init() {
+            setTimeout(() => {
+                this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
+                this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
+                window.onresize = () => {
+                    this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
+                    this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
+                }
+            }, 500); 
+        },
         async initSongListDetail() {
             let id = this.$route.params.id
             await axios.get('http://localhost:3000/playlist/detail',{
@@ -129,6 +174,7 @@ export default {
                 let res = result.data
                 if(res.code === 200) {
                     this.detail = res.playlist
+                    this.collectNum = res.playlist.subscribedCount
                     let des = res.playlist.description
                     des = des.split('\n')
                     des.forEach((item,index) => {
@@ -139,8 +185,21 @@ export default {
                     this.description = des
                     this._normalizeSongList(this.detail.tracks).then((ret) => {
                         this.songList = ret
+                        this.songListc = ret
                     })
                     
+                }
+            })
+
+            axios.get('http://localhost:3000/comment/playlist',{
+                params:{
+                    id: id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.commentList = res.comments
+                    this.total = res.total
                 }
             })
         },
@@ -166,14 +225,14 @@ export default {
             let index = Math.ceil(Math.random() * (this.songList.length-1))
             axios.get('http://localhost:3000/song/url',{
                     params: {
-                        id: this.songList[index].mid
+                        id: this.songListc[index].mid
                     }
                 }).then((result) => {
                     let res = result.data
                     url = res.data[0].url
-                    this.songList[index].url = url
+                    this.songListc[index].url = url
                     this.selectPlay({
-                       list:this.songList,
+                       list:this.songListc,
                        index:index
                     })
                 })
@@ -191,6 +250,7 @@ export default {
                 let collectList = this.collectSongList.slice(0)
                 collectList.push(id)
                 this.set_collectSongList(collectList)
+                this.collectNum += 1
             })
             this.$message({
                 message:'收藏成功',
@@ -213,11 +273,38 @@ export default {
                 })
                 collectList.splice(index,1)
                 this.set_collectSongList(collectList)
+                this.collectNum -= 1
             })
             this.$message({
                 message:'取消收藏成功',
                 center: true
             });
+        },
+        search() {
+            let ret = []
+            for(let i = 0;i < this.songList.length; i ++) {
+                if(this.songList[i].name.includes(this.searchContent)) {
+                    ret.push(this.songList[i])
+                }
+            }
+
+            this.songListc = ret
+        },
+
+        changePage(index) {
+            let offset = (index-1) * this.limit
+            axios.get('http://localhost:3000/comment/playlist',{
+                params:{
+                    id: this.$route.params.id,
+                    offset: offset
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    this.commentList = res.comments
+                    this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
+                }
+            })
         },
         ...mapActions([
             'selectPlay'
@@ -235,10 +322,24 @@ export default {
     z-index: 99;
     left: 200px;
     background: #FAFAFA;
-    width: 100%;
-    height: 100%;
     top: 50px;
-    overflow: auto;
+    overflow: hidden;
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        border-radius: 10px;
+        background: rgba(236,236,236,1);
+        &:hover {
+          background: #CFCFD1;
+        }
+    }
+    &::-webkit-scrollbar-track {
+        border-right:1px solid rgba(100,100,100,.2);
+        background: rgba(188,188,188,.1);
+    }
     .SongListDetailHeader {
         display: flex;
         margin: 30px;
@@ -270,10 +371,10 @@ export default {
                     padding: 0 10px;
                     border-left: 1px solid #E1E1E2;
                     position: absolute;
-                    right: 210px;
+                    right: 10px;
                     &:nth-of-type(1){
                         border-left:none;
-                        right: 270px;
+                        right: 70px;
                     }
                     .num {
                         float: right;
@@ -427,7 +528,6 @@ export default {
                 &:hover {
                     color:#C62F2F;
                 }
-                /* position: relative; */
                 &::before{
                     content: '';
                     width: 57%;
@@ -440,7 +540,7 @@ export default {
 
         }
         .searchSong {
-            margin-right: 230px;
+            margin-right: 30px;
             .searchBox {
                 width: 170px;
                 height: 25px;
@@ -456,6 +556,7 @@ export default {
                 }
             }
             .icon-sousuo {
+                cursor: pointer;
                 position: relative;
                 left: -25px;
                 top: 2px;
@@ -478,14 +579,49 @@ export default {
             width: 90px;
         }
         .tMusicTitle {
-            width: 29%;
+            width: 33%;
         }
         .tSinger {
-            width: 17%;
+            width: 22%;
         }
         .tAlbum {
-            width: 17%;
+            width: 22%;
         }
+    }
+    .sldCommentContainer {
+        margin: 20px 230px 40px 30px;
+        background: #F0F0F2;
+        height: 110px;
+        .sldComment {
+            width: 97.5%;
+            background: #FFFFFF;
+            margin: 10px;
+            border: 1px solid #E1E1E2;
+            height: 50px;
+        }
+        .slcConmentIcon {
+            i {
+                margin-left: 10px;
+                &:nth-child(2) {
+                    font-size: 18px;
+                    position: relative;
+                    top: -1px;
+                }
+                &:nth-child(3) {
+                    font-size: 20px;
+                    position: relative;
+                    top: 1px;
+                }
+            }
+        }
+    }
+    .comContainer {
+        margin-left: 30px;
+        .comtitle {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
     }
 }
 </style>

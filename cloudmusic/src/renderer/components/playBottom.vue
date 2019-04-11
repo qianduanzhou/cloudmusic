@@ -66,17 +66,23 @@
             </div>
           </div>
           <div class="albumContainer">
-            <album :Songs="sequenceList" :types="3" :width='100' :nameWidth="55" :show="activeCur == 'playList'">
-              
+            <album :Songs="sequenceList" :types="3" :width='100' :nameWidth="55" :show="activeCur == 'playList'" :key="renderAlbum">
             </album>
-            <album :Songs="playHistoryList" :types="4" :width='100' :nameWidth="55" :show="activeCur == 'playHistory'">
-              
+
+            <album :Songs="playHistoryList" :types="4" :width='100' :nameWidth="55" :show="activeCur == 'playHistory'" :key="renderAlbum">
             </album>
           </div>
             
       </dropList>
     </div>
-    <div class="modules" @click="showDrop = false" v-show="showDrop" ref="modules"></div>
+    <div class="modules" @click="showDrop = false" ref="modules" v-show="showDrop"
+    style="position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 99;
+            height: 630px;"
+    ></div>
   </div>
 </template>
 
@@ -115,6 +121,12 @@ export default {
       'playing',
       'playHistoryList'
     ]),
+    renderAlbum() {
+      if(this.activeCur==="playList") {
+        return 1
+      }
+      return 2
+    },
     modeClass() {
       switch (this.nowMode) {
         case 'sequence':
@@ -143,7 +155,6 @@ export default {
   },
   watch: {
     currentTime(newVal) {
-      // this.$refs.box.style.left = this.percent * this.timeWidth - boxWidth/2 + 'px'
       this.time = this.percent * this.timeWidth - boxWidth/2
     },
     time(newVal) {
@@ -155,23 +166,7 @@ export default {
     }
   },
   mounted() {
-    this.setAudio(this.$refs.audio)
-
-    this.timeWidth = this.$refs.timeContainer.offsetWidth
-    this.$refs.modules.style.height = document.documentElement.clientHeight - this.$refs.bottom.clientHeight
-
-
-    window.onresize = () => {
-      this.timeWidth = this.$refs.timeContainer.offsetWidth
-      setTimeout(() => {
-        this.$refs.modules.style.height = document.documentElement.clientHeight - this.$refs.bottom.clientHeight
-        console.log(this.$refs.modules.style.height)
-      }, 200);
-      this.$nextTick(() => {
-        
-      })
-      
-    }
+    this.init()
   },
   filters: {
     songTime(value) {
@@ -187,6 +182,21 @@ export default {
     }
   },
   methods: {
+    init() {
+      //  设置vuex中的audio，提供给歌曲详情页使用
+      this.setAudio(this.$refs.audio)
+      //  设置进度条的宽度
+      this.timeWidth = this.$refs.timeContainer.offsetWidth
+      //  设置蒙版层的高度，不遮住底部
+      this.$refs.modules.style.height = document.documentElement.clientHeight - this.$refs.bottom.clientHeight
+      
+      window.onresize = () => {
+        this.timeWidth = this.$refs.timeContainer.offsetWidth
+        setTimeout(() => {
+          this.$refs.modules.style.height = `${document.documentElement.clientHeight - this.$refs.bottom.clientHeight}px`
+        }, 200);    
+    }
+    },
     drap(e) {
       e.stopPropagation()
       if(!this.currentSong.duration) {
@@ -359,12 +369,7 @@ export default {
 <style lang='scss'>
 .bottom {
     .modules {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            left: 0;
-            z-index: 99;
-            height: 630px;
+            
         }
     position: fixed;
     z-index: 1000;

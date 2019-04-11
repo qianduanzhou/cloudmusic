@@ -72,9 +72,9 @@ export default {
 }
 @media screen and (min-width:1100px){
     .find {
-        width: 1100px;
-        padding: 0 30px 0 230px;
-        margin: 50px auto;
+        width: 900px;
+        padding: 0 30px 0 30px;
+        margin: 0 auto;
     }
 }
 </style>

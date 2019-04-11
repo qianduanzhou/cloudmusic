@@ -236,16 +236,18 @@ export default {
                         }
                     }
                     .aSinger {
-                        width: 17%;
+                        margin-left: 10px;
+                        width: 20%;
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
                     }
                     .aAblum {
+                        margin-left: 10px;
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
-                        width: 17%;
+                        width: 22%;
                         box-sizing: border-box;
                         padding-left: 10px;
                     }

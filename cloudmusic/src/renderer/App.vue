@@ -2,7 +2,12 @@
   <div id="app">
     <music-header></music-header>
     <music-nav></music-nav>
-    <div class="aaa">
+    <div class="RootContainer" ref="RootContainer" 
+      style=
+      "height: 570px;
+      width: 840px;
+      margin-top: 50px;
+      margin-bottom: 50px;">
       <router-view></router-view>
     </div>
     <play-bottom></play-bottom>
@@ -26,21 +31,39 @@
       MusicNav,
       PlayBottom
     },
+    mounted() {
+      this.init()
+    },
+    methods: {
+      init() {
+        this.$refs.RootContainer.style.width = `${document.documentElement.offsetWidth - 200}px`
+        this.$refs.RootContainer.style.height = `${document.documentElement.clientHeight - 100}px`
+        window.onresize = () => {
+          setTimeout(() => {
+            this.$refs.RootContainer.style.width = `${document.documentElement.offsetWidth - 200}px`
+            this.$refs.RootContainer.style.height = `${document.documentElement.clientHeight - 100}px`
+          }, 200);
+          }
+      }
+    }
   }
 </script>
 
 <style lang="scss">
   @import url('./assets/css/reset');
+
   @import './assets/iconfont/iconfont.css';
+
   @import url('./assets/css/base');
-  
+
   #app {
     background: #FAFAFA;
     
-    .aaa {
+    .RootContainer {
       height: 570px;
+      width: 840px;
       margin-top: 50px;
-      margin-bottom: 50px;
+      margin-bottom: 50px; 
       margin-left: 200px;
       overflow: auto;
       &::-webkit-scrollbar {
@@ -59,7 +82,7 @@
           background: rgba(188,188,188,.1);
       }
     }
-    @media screen and (min-height:670px){
+    /* @media screen and (min-height:670px){
       .aaa {
         height: 570px;
       }
@@ -83,6 +106,6 @@
       .aaa {
         height: 940px;
       }
-    }
+    } */
   }
 </style>
