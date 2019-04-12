@@ -1,7 +1,7 @@
 <template>
   <div class="musiclist">
       <ul class="musicContainer">
-          <li class="music allCenter" v-for="(item,index) in list" :key="item.id">
+          <li class="music allCenter" v-for="(item,index) in list" :key="item.id"  @dblclick="getDatas(item)">
               <span class="id">{{index + 1 | addZero}}</span>
               <img :src="item.song.album.blurPicUrl" alt="">
               <div class="musicName">
@@ -10,7 +10,7 @@
               </div>
               <i class="sq"></i>
               <i class="play"></i>
-              <p class="name">{{item.song.artists[0].name}}</p>
+              <p class="name" @click="getData(item)">{{item.song.artists[0].name}}</p>
               <div class="musicName">
                   <p class="title">{{item.song.name}}</p>
                   <p class="alias" v-if="item.song.alias.length > 0">({{item.song.alias[0]}})</p>
@@ -29,12 +29,19 @@ export default {
             default: []
         }
     },
+    methods: {
+        getData(data) {
+            this.$emit('getData',data)
+        },
+        getDatas(data) {
+            this.$emit('getDatas',data)
+        }
+  }
 }
 </script>
 
 <style lang='scss'>
 .musiclist {
-    cursor: pointer;
     border: 1px solid #EDEDED;
     .music {
         padding: 10px 0;
@@ -52,6 +59,7 @@ export default {
             height: 40px;
         }
         .musicName {
+            cursor: pointer;
             width: 30%;
             box-sizing: border-box;
             padding-left: 10px;
@@ -67,6 +75,7 @@ export default {
             }
         }
         .name {
+            cursor: pointer;
             width: 20%;
             padding-left: 10px;
         }

@@ -30,10 +30,11 @@ export function addZero(value) {
 }
 
 export function wan(value) {
-  if(value/10000 <= 0) {
+  if(value/10000 > 1) {
+    return Math.floor(value / 10000)+'万'
+  }else {
     return value
   }
-  return Math.floor(value / 10000)+'万'
 }
 
 export function time(value) {

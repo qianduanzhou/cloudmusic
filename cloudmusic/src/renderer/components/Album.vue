@@ -30,11 +30,11 @@
                   <div class="aAblum" v-if="types === 1">
                       {{item.album}}
                   </div>
-                  <span class="duration" v-if="types === 0 || types === 3 || types === 4">{{item.duration | time}}</span>
+                  <span class="duration" v-if="types === 0 || types === 3 || types === 4 || types === 5">{{item.duration | time}}</span>
                   <span class="duration" v-if="types === 1" style="text-align:left;">{{item.duration | time}}</span>
               </li>
           </ul>
-          <p class="all" @click.stop="more" v-if="all && types ===0" >查看全部50首></p>
+          <p class="all" @click.stop="more" v-if="all && types === 0" >查看全部50首></p>
       </div>
   </div>
 </template>
@@ -147,7 +147,7 @@ export default {
         .albumPic {
             width: 150px;
             height: 150px;
-            margin-right: 30px;
+            margin-right: 50px;
         }
         .songContainer {
             

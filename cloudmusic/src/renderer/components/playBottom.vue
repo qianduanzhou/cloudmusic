@@ -53,7 +53,8 @@
               </div>
           </template>
           <div class="bDetail spCenter alignCenter">
-            <p class="bNum">共{{sequenceList.length}}首</p>
+            <p class="bNum" v-if="activeCur == 'playList'">共{{sequenceList.length}}首</p>
+            <p class="bNum" v-if="activeCur == 'playHistory'">共{{playHistoryList.length}}首</p>
             <div class="bControl alignCenter">
               <div class="bCollection">
                 <i class="iconfont icon-shoucanggedan"></i>
@@ -66,10 +67,10 @@
             </div>
           </div>
           <div class="albumContainer">
-            <album :Songs="sequenceList" :types="3" :width='100' :nameWidth="55" :show="activeCur == 'playList'" :key="renderAlbum">
+            <album :Songs="sequenceList" :types="3" :width='100' :nameWidth="55" :show="activeCur == 'playList'" :key="`value:${renderAlbum1}`">
             </album>
 
-            <album :Songs="playHistoryList" :types="4" :width='100' :nameWidth="55" :show="activeCur == 'playHistory'" :key="renderAlbum">
+            <album :Songs="playHistoryList" :types="4" :width='100' :nameWidth="55" :show="activeCur == 'playHistory'" :key="`value:${renderAlbum2}`">
             </album>
           </div>
             
@@ -121,11 +122,17 @@ export default {
       'playing',
       'playHistoryList'
     ]),
-    renderAlbum() {
+    renderAlbum1() {
       if(this.activeCur==="playList") {
         return 1
       }
       return 2
+    },
+    renderAlbum2() {
+      if(this.activeCur==="playHistory") {
+        return 3
+      }
+      return 4
     },
     modeClass() {
       switch (this.nowMode) {
@@ -167,6 +174,10 @@ export default {
   },
   mounted() {
     this.init()
+  },
+  updated() {
+    //  设置进度条的宽度
+    this.timeWidth = this.$refs.timeContainer.offsetWidth
   },
   filters: {
     songTime(value) {

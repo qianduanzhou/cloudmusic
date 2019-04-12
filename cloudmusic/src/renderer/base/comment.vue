@@ -1,6 +1,6 @@
 <template>
   <ul class="commitList">
-      <li class="listItem  alignCenter" v-for="item in list" :key="item.id">
+      <li class="listItem  alignCenter" v-for="item in list" :key="item.id" @contextmenu="showDelete(item)">
             <div class="avaPic" :style="{backgroundImage:`url(${item.user.avatarUrl})`}"></div>
              <div class="avaCommit">
                  <p class="avator">{{item.user.nickname}}:</p><b class="content">{{item.content}}</b>
@@ -18,8 +18,55 @@
 </template>
 
 <script>
+import {mapGetters} from 'vuex'
+import axios from 'axios'
 export default {
-    props: ['list']
+    props: ['list','songListId'],
+    computed: {
+        ...mapGetters([
+            'nickName'
+        ])
+    },
+    methods: {
+        showDelete(item) {
+            if(this.nickName == item.user.nickname) {
+            this.$alert('是否删除评论', '删除评论', {
+            confirmButtonText: '确定',
+            callback: (action,instance) => {
+                if(action == "confirm") {
+                    this.deleteComment(item)
+                    this.$message({
+                        type: 'success',
+                        message: `删除评论成功`
+                    });
+                }else {
+                    this.$message({
+                        type: 'info',
+                        message: `取消删除`
+                    });
+                }
+                
+            }
+            });
+            }
+        },
+        deleteComment(item) {
+            axios.get('http://localhost:3000/comment',{
+                params: {
+                    t: 0,
+                    type: 2,
+                    id: this.songListId,
+                    commentId:item.commentId,
+                    timestamp: (new Date()).getTime()
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.$emit('deleteComment',item.commentId)
+                }
+            })
+        }
+    }
 }
 </script>
 
@@ -31,6 +78,7 @@ export default {
         height: 80px;
         box-sizing: border-box;
         .avaPic {
+            cursor: pointer;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -39,6 +87,7 @@ export default {
             border: 1px solid #ccc;
         }
         .avaCommit {
+            cursor: pointer;
             box-sizing: border-box;
             width: 90%;
             margin-left: 10px;

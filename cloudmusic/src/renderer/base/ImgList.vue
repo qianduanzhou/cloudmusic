@@ -2,11 +2,12 @@
   <div class="list">
       <ul class="listContainer">
           <slot name="specail"></slot>      
-          <li :style="{width:listWidth + '%'}" @click="getData(item)"
+          <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}" @click="getData(item)"
           v-for='item in list' :key='item.id'
           >
           <slot name="img" :imgs="item"></slot>
-            <p :style="{'font-size':`${fontsize}px`}">{{item.name}}</p>
+            <p :style="{'font-size':`${fontsize}px`}" v-if="item.name">{{item.name}}</p>
+            <p :style="{'font-size':`${fontsize}px`}" v-if="item.nickname">{{item.nickname}}</p>
           </li>
       </ul>
   </div>
@@ -26,6 +27,10 @@ export default {
     list: {
       type: Array,
       default:[]
+    },
+    borderRadius:{
+      type:Number,
+      default:20
     }
   },
   data() {
@@ -37,7 +42,6 @@ export default {
     getData(data) {
       this.$emit('getData',data)
     },
-
   }
 }
 </script>
@@ -64,6 +68,7 @@ export default {
           padding: 3px;
           line-height: 20px;
           font-size: 14px;
+          text-align: center;
           color:#555555;
           &:hover {
             color:#111111;

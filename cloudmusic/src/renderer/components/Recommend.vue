@@ -3,11 +3,11 @@
       <swiper :list="bannerList"></swiper>
       <div class="head">
           <p class="title">推荐歌单</p>
-          <div class="more">
+          <div class="more" @click="moreSongList">
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <img-list :listWidth="18" :list="recList" :isRec="true">
+      <img-list :listWidth="18" :list="recList" :isRec="true" @getData="toSongListDetail">
         <template v-slot:specail>
             <li style="width:18%"><img src="../../../static/logo.jpg"/><p style="font-size:13px;">每日推荐</p></li>
         </template>
@@ -36,7 +36,7 @@
               <b>更多</b><span class="iconfont icon-you"></span>
           </div>
       </div>
-      <music-list :list="musicList">
+      <music-list :list="musicList" @getData='toSinger' @getDatas='playMusic'>
       </music-list>
 
       <div class="head">
@@ -66,10 +66,11 @@ import {shuffle} from '../common/utils'
 import Swiper from '../base/Swiper'
 import ImgList from '../base/ImgList'
 import MusicList from '../base/MusicList'
-
+import {createSong} from '../common/song'
+import {mapActions} from 'vuex'
 
 export default {
-  
+
     components:{
         ImgList,
         Swiper,
@@ -129,7 +130,42 @@ export default {
                     this.loading = false
                 }
             })
-        }
+        },
+        toSongListDetail(data) {
+            this.$router.push(`/find/songList/${data.id}`)
+        },
+        moreSongList() {
+            this.$router.push('/find/songList')
+        },
+        toSinger(data) {
+            let id = data.song.artists[0].id
+            this.$router.push(`/find/singer/${id}`)
+        },
+        playMusic(data){
+            let song = data.song
+            let id = song.artists[0].id
+            let mid = song.id
+            let singer = song.artists[0].name
+            let name = song.name
+            let album = song.album.name
+            let duration = song.duration
+            let picUrl = song.album.picUrl
+            let alia = song.alias[0]
+            let url = ''
+            axios.get('http://localhost:3000/song/url',{
+                    params: {
+                        id: mid
+                    }
+                }).then((result) => {
+                    let res = result.data
+                    url = res.data[0].url
+                    let Song = createSong(id,mid,singer,name,album,duration,picUrl,url,alia)
+                    this.insertSong(Song)
+                })
+        },
+        ...mapActions([
+            'insertSong'
+        ])
     }
 }
 </script>

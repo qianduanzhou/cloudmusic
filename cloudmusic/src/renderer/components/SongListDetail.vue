@@ -69,24 +69,25 @@
           <div class="tableItem tDuration">时长</div>
       </div>
       
-      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songListc">
+      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songListc.length">
 
       </album>
 
       <div class="sldCommentContainer" v-if="cur == 1">
-          <input class="sldComment" type="text" v-model="commentContent"/>
+          <input class="sldComment" type="text" v-model="commentContent" placeholder="140"/>
           <div class="slcConmentIcon">
               <i class="iconfont icon-xiaolian"></i>
               <i class="iconfont">@</i>
               <i class="iconfont">#</i>
           </div>
+          <button class="sendComment" @click="sendComment" :plain="true">评论</button>
       </div>
       
       <div class="comContainer" v-if="cur == 1">
           <p class="comtitle" ref = 'comment'>
               精彩评论
           </p>
-          <comment :list="commentList"></comment>
+          <comment :list="commentList" :songListId="parseInt(this.$route.params.id)" @deleteComment="deleteCom"></comment>
           <el-pagination
             style="margin:20px 0 50px 50%;transform:translateX(-50%)"
             background
@@ -96,7 +97,15 @@
             :total="total">
         </el-pagination>
       </div>
-      
+      <div class="collecter"  v-if="cur == 2">
+          <ImaList :list="collecterList" :listWidth="20">
+              <template v-slot:img="imgs">
+                  <img v-lazy="imgs.imgs.avatarUrl" style="border-radius:50%;margin:0 auto;width:40%;display:block;">
+              </template>
+          </ImaList>
+          <div v-loading="loading" v-if="loading"></div>
+          <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;">没有更多评论了~~~</p>
+      </div>
   </div>
 </template>
 
@@ -106,6 +115,7 @@ import {createSong} from '../common/song'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../components/Album'
 import Comment from '../base/comment'
+import ImaList from '../base/ImgList'
 
 export default {
     data() {
@@ -114,10 +124,14 @@ export default {
             songList : [],
             songListc : [],
             commentList:[],
+            collecterList: [],
             detail: {},
             collectNum:0,
             limit:20,
             total:0,
+            offset:0,
+            loading: true,
+            moreColl:true,
             searchContent:'',
             commentContent:'',
             wordHide: true,
@@ -131,11 +145,15 @@ export default {
     },
     components: {
         Album,
-        Comment
+        Comment,
+        ImaList
     },
     mounted() {
         this.init()
         this.initSongListDetail()
+        this.initCommentList()
+        this.initCollecter()
+        this.moreCollecter()
     },
     computed: {
         ...mapGetters([
@@ -190,7 +208,10 @@ export default {
                     
                 }
             })
-
+            
+        },
+        initCommentList() {
+            let id = this.$route.params.id
             axios.get('http://localhost:3000/comment/playlist',{
                 params:{
                     id: id
@@ -202,6 +223,51 @@ export default {
                     this.total = res.total
                 }
             })
+        },
+
+        initCollecter() {
+            let id = this.$route.params.id
+            axios.get('http://localhost:3000/playlist/subscribers',{
+                params: {
+                    id: id,
+                    limit: 50
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.collecterList = res.subscribers
+                    this.moreColl = res.more
+                }
+            })
+        },
+        moreCollecter() {
+            setTimeout(() => {
+                this.$refs.SongListDetail.onscroll = () => {
+                    let clientHeight = this.$refs.SongListDetail.clientHeight,
+                    scrollTop = this.$refs.SongListDetail.scrollTop,
+                    scrollHeight = this.$refs.SongListDetail.scrollHeight
+                    if(clientHeight + scrollTop >= scrollHeight && this.cur == 2 && this.moreColl) {
+                        let id = this.$route.params.id
+                        this.offset += 50
+                        axios.get('http://localhost:3000/playlist/subscribers',{
+                            params: {
+                                id: id,
+                                offset: this.offset
+                            }
+                        }).then((result) => {
+                            let res = result.data
+                            if(res.code === 200) {
+                                this.moreColl = res.more
+                                
+                                if(!this.moreColl) {
+                                    return this.loading = false
+                                }
+                                this.collecterList = this.collecterList.concat(res.subscribers)
+                            }
+                        })
+                    }
+                } 
+            }, 500);           
         },
         async _normalizeSongList(list) {
             let ret = []
@@ -253,6 +319,7 @@ export default {
                 this.collectNum += 1
             })
             this.$message({
+                type:'success',
                 message:'收藏成功',
                 center: true
             });
@@ -276,6 +343,7 @@ export default {
                 this.collectNum -= 1
             })
             this.$message({
+                type:'success',
                 message:'取消收藏成功',
                 center: true
             });
@@ -305,6 +373,35 @@ export default {
                     this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
                 }
             })
+        },
+        sendComment() {
+            let id = parseInt(this.$route.params.id)
+            axios.get('http://localhost:3000/comment',{
+                params: {
+                    t: 1,
+                    type: 2,
+                    id: id,
+                    content: this.commentContent,
+                    timestamp: (new Date()).getTime()
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.$message({
+                        type:'success',
+                        message: '发送成功',
+                        center: true
+                    });
+                    this.commentContent = ''
+                    this.commentList.unshift(res.comment)
+                }
+            })
+        },
+        deleteCom(id) {
+            let index = this.commentList.findIndex((item) => {
+                return item.commentId == id
+            })
+            this.commentList.splice(index,1)
         },
         ...mapActions([
             'selectPlay'
@@ -589,17 +686,24 @@ export default {
         }
     }
     .sldCommentContainer {
-        margin: 20px 230px 40px 30px;
+        margin: 20px 30px 40px 30px;
         background: #F0F0F2;
+        width: 100%;
         height: 110px;
         .sldComment {
-            width: 97.5%;
+            width: 93.5%;
             background: #FFFFFF;
             margin: 10px;
             border: 1px solid #E1E1E2;
             height: 50px;
+            outline: none;
+            &::placeholder {
+                font-size: 14px;
+                padding-left: 95%;
+            }
         }
         .slcConmentIcon {
+            display: inline-block;
             i {
                 margin-left: 10px;
                 &:nth-child(2) {
@@ -613,6 +717,16 @@ export default {
                     top: 1px;
                 }
             }
+        }
+        .sendComment {
+            display: inline-block;
+            float: right;
+            margin-right: 45px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            font-size: 14px;
+            border-radius: 5px;
         }
     }
     .comContainer {
