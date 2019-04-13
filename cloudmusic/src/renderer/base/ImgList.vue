@@ -64,6 +64,10 @@ export default {
           width: 100%;
           border: 1px solid #E1E1E2;
         }
+        .icon-shipin1 {
+          font-size: 11px;
+          margin-right: 3px;
+        }
         p {
           padding: 3px;
           line-height: 20px;
@@ -87,6 +91,12 @@ export default {
           b {
             font-size: 12px;
           }
+        }
+        .duration {
+          position: absolute;
+          left: 5px;
+          bottom: 42px;
+          color: white;
         }
         .play {
           opacity: 0;

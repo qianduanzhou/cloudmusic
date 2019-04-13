@@ -23,6 +23,10 @@
     display: flex;
     justify-content: space-between;
 }
+.spaCenter {
+    display: flex;
+    justify-content: space-around;
+}
 .bgc {
     background-position: center;
     background-size: cover;

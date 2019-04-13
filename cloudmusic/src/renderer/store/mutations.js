@@ -19,7 +19,9 @@ const mutations = {
     [types.SET_COLLECTSONG](state,collectSong) {
         state.userInfo.collectSong = collectSong
     },
-
+    [types.SET_COLLECTSINGER](state,collectSinger) {
+        state.userInfo.collectSinger = collectSinger
+    },
 
     [types.SET_SINGER](state,singer) {
         state.songs.singer = singer

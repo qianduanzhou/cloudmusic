@@ -11,7 +11,7 @@
               <router-link to="/fm"><i class="iconfont icon-iconku-zhuanqu-"></i>私人FM</router-link>
           </li>
           <li>
-              <router-link to="/video"><i class="iconfont icon-shipin"></i>视频</router-link>
+              <router-link to="/video"><i class="iconfont icon-shipin1"></i>视频</router-link>
           </li>
           <li>
               <router-link to="/friend"><i class="iconfont icon-pengyou"></i>朋友</router-link>
@@ -89,6 +89,9 @@ export default {
                 padding: 10px 0 10px 20px;
                 color:#7D7D7D;
             }
+            .icon-shipin1 {
+                font-size: 11px;
+            }
             a {
                 display: block;
                 position: relative;
@@ -124,8 +127,8 @@ export default {
                         font-size: 13px;
                     }
                     .icon-plus-{
-                            position: absolute;
-                            right: 15px;
+                        position: absolute;
+                        right: 15px;
                     }
                 }
                 &:hover{

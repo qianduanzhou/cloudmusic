@@ -18,12 +18,13 @@
                   <p>MV数：{{singerDetail.artist.mvSize}}</p>
               </div>
           </div>
-          <span class="collectSinger"><i class="iconfont icon-shoucanggedan"></i>收藏</span>
+          <span class="collectSinger" v-if="!isCollect" :plain="true" @click="collect"><i class="iconfont icon-shoucanggedan"></i>收藏</span>
+          <span class="collectSinger" v-if="isCollect" :plain="true" @click="canCollect"><i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i>已收藏</span>
       </header>
       <ul class="singerNav">
           <li v-for="(item,index) in navList" :key = "item" @click="cur = index" :class="{'active':cur == index}">{{item}}</li>
       </ul>
-      <div class="album">
+      <div class="album" v-if="cur == 0">
           <album :Songs="hotSongs" :show="cur == 0" v-if="hotSongs.length != 0" :width="70">
             <template v-slot:pic>
                 <div class="albumPic bgc"  style="background: url('/static/hotsong.jpg')"></div>
@@ -39,21 +40,53 @@
             </template>
         </album>
       </div>
-      <div class="album" v-for="item in album" :key="item.id">
-          <album :Songs="item" :show="cur == 0" v-if="item.length != 0"  :types = "5" :width="70">
-            <template v-slot:pic>
-                <div class="albumPic bgc"  :style="{backgroundImage: `url(${item[0].picUrl})`}"></div>
+      <div  v-if="cur == 0">
+          <div class="album" v-for="item in album" :key="item.id">
+            <album :Songs="item" :show="cur == 0" v-if="item.length != 0"  :types = "5" :width="70">
+                <template v-slot:pic>
+                    <div class="albumPic bgc"  :style="{backgroundImage: `url(${item[0].picUrl})`}"></div>
+                </template>
+                <template v-slot:header>
+                    <div class="Navheader">
+                            <p class="title">{{item[0].album}}</p>
+                            <div class="i">
+                                <i class="iconfont icon-shoucanggedan"></i>
+                                <i class="iconfont icon-bofang"></i>
+                            </div>
+                    </div>
+                </template>
+            </album>
+        </div>
+      </div>
+      
+      <div class="singerMV" v-if="cur == 1" style="margin:10px 25px">
+          <imgList :listWidth="22" :list="mvList">
+            <template v-slot:img="imgs">
+               <img v-lazy="imgs.imgs.imgurl16v9"/>
+               <div class="num">
+                <i class="iconfont icon-shipin1"></i><span>{{imgs.imgs.playCount | wan}}</span>
+               </div>
+               <span class="duration">{{imgs.imgs.duration | time}}</span>
             </template>
-            <template v-slot:header>
-                <div class="Navheader">
-                        <p class="title">{{item[0].album}}</p>
-                        <div class="i">
-                            <i class="iconfont icon-shoucanggedan"></i>
-                            <i class="iconfont icon-bofang"></i>
-                        </div>
-                </div>
+          </imgList>
+          <div v-loading="loading"></div>
+          <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;" v-if="!loading">没有更多MV了~~~</p>
+      </div>
+
+      <div class="singerDesc" v-if="cur == 2">
+          <div class="descItem" v-for="item in introduction" :key="item.ti">
+              <h1 v-html="item.ti"></h1>
+              <li v-for="(item2,index) in item.txt" :key="index" v-html="item2">
+              </li>
+          </div>
+      </div>
+
+      <div class="sameSinger" v-if="cur == 3">
+          <imgList :listWidth="20" :list="sameSingerList" @getData="toSinger">
+            <template v-slot:img="imgs">
+               <img v-lazy="imgs.imgs.img1v1Url" style="width:70%;display:block;margin:0 auto;"/>
             </template>
-        </album>
+          </imgList>
       </div>
   </div>
 </template>
@@ -61,35 +94,57 @@
 <script>
 import axios from 'axios'
 import Album from '../components/Album'
+import ImgList from '../base/ImgList'
 import {createSong} from '../common/song'
 import { resolve } from 'url';
+import {mapMutations,mapGetters,mapState} from 'vuex'
 
 export default {
     data() {
         return {
-             singerDetail:{},
-             hotSongs:[],
-             album:[],
-             test:'2',
-             navList:[
+             singerDetail: {},
+             hotSongs: [],
+             album: [],
+             introduction: [],
+             mvList: [],
+             sameSingerList:[],
+             offset:0,
+             loading: true,
+             hasMoreMv: true,
+             test: '2',
+             navList: [
                  '专辑','MV','歌手详情','相似歌手'
              ],
              cur: 0,
         }
     },
+    computed: {
+        ...mapGetters([
+           'collectSinger' 
+        ]),
+        isCollect() {
+            let id = parseInt(this.$route.params.id)
+            return this.collectSinger.includes(id)
+        }
+    },
     components: {
-        Album
+        Album,
+        ImgList
     },
     created() {
         this.initSingerDetail()
         this.initAlbum()
-        this.pushTime = 0
+        this.initMv()
+        this.initDesc()
+        this.initSameSinger()
     },
     mounted() {
         this.init()
+        this.moreMv()
     },
     methods: {
         init() {
+            console.log('singerId:',this.$route.params.id)
             setTimeout(() => {
                 this.$refs.singerDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
                 this.$refs.singerDetail.style.height = `${document.documentElement.clientHeight - 100}px`
@@ -154,11 +209,141 @@ export default {
                 if(res.code === 200) {
                     this._normalizeSongs(res.songs,pushTime).then((ret) => {
                         this.album.push(ret)
-                        console.log(this.album)
                     })
                 }
             })
-        }
+        },
+        initMv() {
+            let id = this.$route.params.id
+            axios.get('http://localhost:3000/artist/mv',{
+                params:{
+                    id: id,
+                    limit:20
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.mvList = res.mvs
+                }
+            })
+        },
+        moreMv() {
+            setTimeout(() => {
+                this.$refs.singerDetail.onscroll = () => {
+                    let clientHeight = this.$refs.singerDetail.clientHeight,
+                    scrollTop = this.$refs.singerDetail.scrollTop,
+                    scrollHeight = this.$refs.singerDetail.scrollHeight
+                    if(clientHeight + scrollTop >= scrollHeight && this.cur == 1 && this.hasMoreMv) {
+                        let id = this.$route.params.id
+                        this.offset += 20
+                        axios.get('http://localhost:3000/artist/mv',{
+                            params: {
+                                id: id,
+                                offset: this.offset
+                            }
+                        }).then((result) => {
+                            let res = result.data
+                            if(res.code === 200) {
+                                this.hasMoreMv = res.hasMore
+                                
+                                if(!this.hasMoreMv) {
+                                    return this.loading = false
+                                }
+                                this.mvList = this.mvList.concat(res.mvs)
+                            }
+                        })
+                    }
+                } 
+            }, 500);           
+        },
+        initDesc() {
+            let id = this.$route.params.id
+            axios.get('http://localhost:3000/artist/desc',{
+                params:{
+                    id: id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    let introduction = res.introduction
+                    this.introduction = introduction.filter((item) => {
+                       
+                        item.txt = item.txt.split('\n')
+                        
+                        let item2 = item.txt.map((item) => {
+                             return `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${item}`
+                        })
+                        item.txt = item2
+                        return item
+                    })
+                }
+            })
+        },
+        initSameSinger() {
+            let id = this.$route.params.id
+            axios.get('http://localhost:3000/simi/artist',{
+                params:{
+                    id: id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.sameSingerList = res.artists
+                }
+            })
+        },
+        toSinger(data) {
+            let id = data.id
+            this.$router.push(`/find/singer/${id}`)  
+        },
+        collect() {
+            let id = parseInt(this.$route.params.id)
+            axios.get('http://localhost:3000/artist/sub',{
+                params: {
+                    t: 1,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSinger.slice(0)
+                collectList.push(id)
+                this.set_collectSinger(collectList)
+                this.collectNum += 1
+            })
+            this.$message({
+                type:'success',
+                message:'收藏成功',
+                center: true
+            });
+        },
+        canCollect() {
+            let id = parseInt(this.$route.params.id)
+            axios.get('http://localhost:3000/artist/sub',{
+                params: {
+                    t: 2,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSinger.slice(0)
+                let index = collectList.findIndex((item) => {
+                    return item == id
+                })
+                collectList.splice(index,1)
+                this.set_collectSinger(collectList)
+                this.collectNum -= 1
+            })
+            this.$message({
+                type:'success',
+                message:'取消收藏成功',
+                center: true
+            });
+        },
+        ...mapMutations({
+           set_collectSinger:'SET_COLLECTSINGER'
+        })
     }
 }
 </script>
@@ -232,6 +417,7 @@ export default {
         .collectSinger {
             width: 60px;
             height: 23px;
+            cursor: pointer;
             text-align: center;
             line-height: 23px;
             border: 1px solid #E1E1E2;
@@ -275,6 +461,24 @@ export default {
         &:last-child {
             margin-bottom: 60px;
         }
+    }
+    .singerDesc {
+        margin: 30px 25px;
+        .descItem {
+            margin-bottom: 50px;
+            h1 {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            li {
+                list-style: none;
+                font-size: 14px;
+                line-height: 28px;
+                color: #666666;
+            }
+        }
+        
     }
 }
 </style>

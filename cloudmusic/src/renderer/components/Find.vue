@@ -22,7 +22,7 @@
               </li>
           </ul>
       </nav>
-      <router-view/>
+      <router-view :key="Math.random()"/>
   </div>
 </template>
 

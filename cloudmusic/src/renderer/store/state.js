@@ -5,7 +5,8 @@ const state = {
         password:'',
         avatarUrl:'',
         collectSongList:[],
-        collectSong:[]
+        collectSong:[],
+        collectSinger:[]
     },
     songs:{
         singer: {},

@@ -111,6 +111,7 @@ export default {
             'nickName',
             'avatarUrl',
             'collectSongList',
+            'collectSinger',
             'playHistoryList'
         ])
     }, 
@@ -181,6 +182,7 @@ export default {
                 alert('手机号或者密码错误')
             })
             this.initCollectSongList()
+            this.initCollectSingerList()
             this.initHistory()
         },
 
@@ -217,13 +219,14 @@ export default {
             })
 
             this.initCollectSongList()
+            this.initCollectSingerList()
 
             this.initHistory()
 
             this.dialogVisible = false
         },
 
-        //  查看用户歌单
+        //  初始化用户歌单列表
         initCollectSongList() {
             axios.get('http://localhost:3000/user/playlist',{
                 params: {
@@ -240,6 +243,25 @@ export default {
                 }
             })
         },
+
+        // 初始化用户收藏歌手列表
+        initCollectSingerList() {
+            axios.get('http://localhost:3000/artist/sublist',{
+                params: {
+                    uid: this.id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    let ret = []
+                    res.data.forEach((item) => {
+                        ret.push(item.id)
+                    })
+                    this.set_collectSinger(ret)
+                }
+            })
+        },
+
 
         // 初始化播放历史
         initHistory() {
@@ -301,6 +323,7 @@ export default {
             setAvatarUrl: 'SET_AVATARURL',
             setPassword: 'SET_PASSWORD',
             set_collectSongList:'SET_COLLECTSONGLIST',
+            set_collectSinger:'SET_COLLECTSINGER',
             setPlayHistoryList:'SET_PLAYHISTORYLIST'
         })
     }
