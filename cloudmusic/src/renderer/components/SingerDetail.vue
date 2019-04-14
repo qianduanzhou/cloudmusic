@@ -1,5 +1,6 @@
 <template>
-  <div class="singerDetail" ref="singerDetail" style="width: 100%;height: 100%;">
+
+  <div class="singerDetail scrollStyle" ref="singerDetail" style="width: 100%;height: 100%;">
       <header class="singeheader left">
           <div class="pic" :style ='{ backgroundImage: `url(${singerDetail.artist.img1v1Url})`}'></div>
           <div class="singInfo">
@@ -93,7 +94,7 @@
 
 <script>
 import axios from 'axios'
-import Album from '../components/Album'
+import Album from '../base/Album'
 import ImgList from '../base/ImgList'
 import {createSong} from '../common/song'
 import { resolve } from 'url';
@@ -357,21 +358,6 @@ export default {
     left: 200px;
     overflow: hidden;
     overflow-y: scroll;
-    &::-webkit-scrollbar {
-        width: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-        border-radius: 10px;
-        background: rgba(236,236,236,1);
-        &:hover {
-          background: #CFCFD1;
-        }
-    }
-    &::-webkit-scrollbar-track {
-        border-right:1px solid rgba(100,100,100,.2);
-        background: rgba(188,188,188,.1);
-    }
     .singeheader {
         margin: 33px;
         .pic {

@@ -1,5 +1,6 @@
 <template>
-  <div class="SongListDetail" ref="SongListDetail" style="width: 100%;height: 100%;">
+
+  <div class="SongListDetail scrollStyle" ref="SongListDetail" style="width: 100%;height: 100%;">
       <header class="SongListDetailHeader">
           <div class="listPic bgc" :style="{backgroundImage:`url(${detail.coverImgUrl})`}"></div>
           <div class="listDetailContainer">
@@ -113,7 +114,7 @@
 import axios from 'axios'
 import {createSong} from '../common/song'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
-import Album from '../components/Album'
+import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
 
@@ -422,21 +423,6 @@ export default {
     top: 50px;
     overflow: hidden;
     overflow-y: scroll;
-    &::-webkit-scrollbar {
-        width: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-        border-radius: 10px;
-        background: rgba(236,236,236,1);
-        &:hover {
-          background: #CFCFD1;
-        }
-    }
-    &::-webkit-scrollbar-track {
-        border-right:1px solid rgba(100,100,100,.2);
-        background: rgba(188,188,188,.1);
-    }
     .SongListDetailHeader {
         display: flex;
         margin: 30px;

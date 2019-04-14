@@ -9,6 +9,9 @@ import SingerDetail from '../components/SingerDetail'
 import SongDetail from '../components/SongDetail'
 import SongList from '../components/SongList'
 import SongListDetail from '../components/SongListDetail'
+import DayRecSong from '../components/DayRecSong'
+import gSListDetail from '../components/gSListDetail'
+
 
 Vue.use(Router)
 export default new Router({
@@ -26,7 +29,13 @@ export default new Router({
       children: [
         {
           path:'recommend',
-          component:Recommend
+          component:Recommend,
+          children: [
+            {
+              path:'dayRecSong',
+              component:DayRecSong
+            }
+          ]
         },
         {
           path:'singer',
@@ -45,8 +54,12 @@ export default new Router({
             {
               path:':id',
               component:SongListDetail
-            }
+            },
           ]
+        },
+        {
+          path:'good',
+          component:gSListDetail
         }
       ]
     },

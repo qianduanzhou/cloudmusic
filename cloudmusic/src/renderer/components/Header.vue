@@ -112,7 +112,8 @@ export default {
             'avatarUrl',
             'collectSongList',
             'collectSinger',
-            'playHistoryList'
+            'playHistoryList',
+            'collectSong'
         ])
     }, 
     components: {
@@ -183,6 +184,7 @@ export default {
             })
             this.initCollectSongList()
             this.initCollectSingerList()
+            this.initLikeMusic()
             this.initHistory()
         },
 
@@ -220,7 +222,7 @@ export default {
 
             this.initCollectSongList()
             this.initCollectSingerList()
-
+            this.initLikeMusic()
             this.initHistory()
 
             this.dialogVisible = false
@@ -261,7 +263,19 @@ export default {
                 }
             })
         },
-
+        // 初始化喜欢音乐
+        initLikeMusic() {
+            axios.get('http://localhost:3000/likelist',{
+                params: {
+                    uid: this.id
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code == 200) {
+                    this.set_collectSong(res.ids)
+                }
+            })
+        },
 
         // 初始化播放历史
         initHistory() {
@@ -324,7 +338,8 @@ export default {
             setPassword: 'SET_PASSWORD',
             set_collectSongList:'SET_COLLECTSONGLIST',
             set_collectSinger:'SET_COLLECTSINGER',
-            setPlayHistoryList:'SET_PLAYHISTORYLIST'
+            set_collectSong:'SET_COLLECTSONG',
+            setPlayHistoryList:'SET_PLAYHISTORYLIST',
         })
     }
 }

@@ -1,6 +1,6 @@
 <template>
   <transition name="big" mode="out-in">
-  <div class="songDetail" ref="container" :key="111">
+  <div class="songDetail scrollStyle" ref="container" :key="111">
       <section class="songContainer allCenter">
           <div class="bg"></div>
           <div class="song alignCenter">
@@ -31,7 +31,7 @@
                           <div class="item alignCenter"><p class="titles">来源:</p><b class="titleDetail">{{currentSong.singer}}</b></div>                      
                       </div>
                   </header>
-                  <section class="wordoutside" ref="outsideContainer" @mouseenter="mousein = true" @mouseleave="mousein = false">
+                  <section class="wordoutside scrollStyle" ref="outsideContainer" @mouseenter="mousein = true" @mouseleave="mousein = false">
                       <ul class="wordContainer" ref="wordContainer">
                         <li v-for="(item,index) in lyc" :key="index" class="wordItem" :class="{'active':cur == index}" v-html="item"> 
                         </li>
@@ -310,18 +310,6 @@ export default {
     z-index: 99;
     background: white;
     overflow: auto;
-    &::-webkit-scrollbar {
-        width: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-        border-radius: 10px;
-        background: #BCBDC1;
-    }
-    &::-webkit-scrollbar-track {
-        border-right:1px solid rgba(100,100,100,.2);
-        background: rgba(188,188,188,.1);
-    }
     .songContainer {
         position: relative;
         box-sizing: border-box;
@@ -456,18 +444,6 @@ export default {
                     margin-top: 30px;
                     position: relative;
                     overflow-y: auto;
-                    &::-webkit-scrollbar {
-                        width: 10px;
-                    }
-                    &::-webkit-scrollbar-thumb {
-                        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-                        border-radius: 10px;
-                        background: #BCBDC1;
-                    }
-                    &::-webkit-scrollbar-track {
-                        border-right:1px solid rgba(100,100,100,.2);
-                        background: rgba(188,188,188,.1);
-                    }
                     .wordContainer {
                         height: 320px;
                         .wordItem {

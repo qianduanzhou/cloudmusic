@@ -11,7 +11,7 @@
       </nav>
       <imgList :listWidth="23" :list="songList" @getData="toSonglistDetail">
           <template v-slot:specail>
-              <li style="width:23%"><img src="../../../static/songList.jpg"/><p>精品歌单，倾心推荐，给最懂音乐的你</p></li>
+              <li style="width:23%" v-if="name=='全部歌单'" @click="toGSLDetil"><img src="../../../static/songList.jpg"/><p>精品歌单，倾心推荐，给最懂音乐的你</p></li>
           </template>
           <template v-slot:img="imgs">
               <img v-lazy="imgs.imgs.coverImgUrl"/>
@@ -216,6 +216,9 @@ export default {
             this.$router.push({
                 path: `/find/songlist/${id}`,    
             })
+        },
+        toGSLDetil() {
+            this.$router.push('/find/good')
         }
     }
 }

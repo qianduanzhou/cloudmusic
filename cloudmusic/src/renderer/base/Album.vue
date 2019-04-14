@@ -15,7 +15,8 @@
               :key="index" @dblclick="playsong(index)" :class="{'songActive' :currentSong.name == item.name}">
                   <span class="index" v-if="currentSong.name != item.name">{{index+1 | addZero}}</span>
                   <span class="index iconfont icon-horn-copy" v-if="currentSong.name == item.name"></span>
-                  <i class="love iconfont icon-xinaixin1" v-if="types!=3 && types!=4"></i>
+                  <i class="love iconfont icon-xinaixin1"  v-if="types!=3 && types!=4 && !isCollect(item.mid)" @click="collect(item.mid)" :plain="true"></i>
+                  <i class="love iconfont icon-xinaixin" style="color:red;" :plain="true" @click="canCollect(item.mid)" v-if="types!=3 && types!=4 && isCollect(item.mid)"></i>
                   <i class="down iconfont icon-xiazai" v-if="types!=3 && types!=4"></i>
                   <div class="nameContainer left alignCenter" :style="{width:`${nameWidth}%`}">
                       <div class="songName alignCenter">{{item.name}}
@@ -73,11 +74,12 @@ export default {
     computed: {
         ...mapGetters([
             'playList',
-            'currentSong'
+            'currentSong',
+            'collectSong'
         ]),
         playCls() {
             return  ''
-        }
+        },
     },
     data() {
         return {
@@ -92,6 +94,9 @@ export default {
         }
     },
     methods: {
+        isCollect(id) {
+            return this.collectSong.includes(id)
+        },
         more() {
             this.Songsc = this.Songs.slice(0,50)
             this.all = false;
@@ -123,17 +128,56 @@ export default {
                        index:index
                     })
                 })
-            }
-            /*标记*/
-            
-            
+            }  
+        },
+        collect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:true,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                collectList.push(id)
+                this.set_collectSong(collectList)
+            })
+            this.$message({
+                type:'success',
+                message:'收藏成功',
+                center: true
+            });
+        },
+        canCollect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:false,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                let index = collectList.findIndex((item) => {
+                    return item == id
+                })
+                collectList.splice(index,1)
+                this.set_collectSong(collectList)
+            })
+            this.$message({
+                type:'success',
+                message:'取消收藏成功',
+                center: true
+            });
         },
         ...mapActions([
             'selectPlay',
             'insertSong'
         ]),
         ...mapMutations({
-            setPlayList:'SET_PLAYLIST'
+            setPlayList:'SET_PLAYLIST',
+            set_collectSong:'SET_COLLECTSONG'
         })
     }
 }

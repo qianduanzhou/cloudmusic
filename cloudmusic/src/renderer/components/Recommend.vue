@@ -1,6 +1,8 @@
 <template>
   <div class="recommend"  v-loading="loading">
-      <swiper :list="bannerList"></swiper>
+      <div v-if="$route.fullPath=='/find/recommend'">
+          <swiper :list="bannerList"></swiper>
+      </div>
       <div class="head">
           <p class="title">推荐歌单</p>
           <div class="more" @click="moreSongList">
@@ -9,7 +11,7 @@
       </div>
       <img-list :listWidth="18" :list="recList" :isRec="true" @getData="toSongListDetail">
         <template v-slot:specail>
-            <li style="width:18%"><img src="../../../static/logo.jpg"/><p style="font-size:13px;">每日推荐</p></li>
+            <li style="width:18%" @click="toDayRec"><img src="../../../static/logo.jpg"/><p style="font-size:13px;">每日歌曲推荐</p></li>
         </template>
         <template v-slot:img="imgs">
               <img v-lazy="imgs.imgs.picUrl"/>
@@ -55,6 +57,7 @@
           <p>现在可以根据个人喜好，自由调整首页栏目顺序啦~</p>
           <el-button type="danger" class="btn" plain>调整栏目顺序</el-button>
       </footer>
+      <router-view/>
   </div>
 </template>
 
@@ -162,6 +165,9 @@ export default {
                     let Song = createSong(id,mid,singer,name,album,duration,picUrl,url,alia)
                     this.insertSong(Song)
                 })
+        },
+        toDayRec() {
+            this.$router.push('/find/recommend/dayRecSong')
         },
         ...mapActions([
             'insertSong'
