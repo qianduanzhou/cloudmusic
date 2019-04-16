@@ -8,7 +8,7 @@
       width: 840px;
       margin-top: 50px;
       margin-bottom: 50px;">
-      <router-view></router-view>
+      <router-view :root="$refs.RootContainer"></router-view>
     </div>
     <play-bottom></play-bottom>
   </div>

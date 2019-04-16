@@ -7,6 +7,9 @@ const mutations = {
     [types.SET_PASSWORD](state,password) {
         state.userInfo.password = password
     },
+    [types.SET_USERID](state,id) {
+        state.userInfo.userId = id
+    },
     [types.SET_NICKNAME](state,nickName) {
         state.userInfo.nickName = nickName
     },
@@ -49,7 +52,7 @@ const mutations = {
     },
     [types.SET_PLAYHISTORYLIST](state,playHistoryList) {
         state.songs.playHistoryList = playHistoryList
-    }
+    },
 }
 
 export default mutations

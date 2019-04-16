@@ -43,6 +43,7 @@ import axios from 'axios'
 
 
 export default {
+  props:['root'],
   components: {
     ImgList
   },
@@ -141,43 +142,48 @@ export default {
     },
     //  加载更多
     moreSinger() {
-      window.onscroll = () => {
-        if(this.$route.fullPath != '/find/singer') {
-          this.singList = []
-          return 
+      
+      setTimeout(() => {
+        this.root.onscroll = () => {
+          if(this.$route.fullPath != '/find/singer') {
+            this.singList = []
+            return 
+          }
+          let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
+          let initial = ''
+          if(this.filterList[this.filtercur] != '热门') {
+            initial = this.filterList[this.filtercur]
+          }
+          // let height = this.root.offsetHeight
+          // var bottomSinger = this.$refs.list.$refs.li[this.$refs.list.$refs.li.length-2]
+          var clientHeight = this.root.clientHeight
+          var scrollHeight = this.root.scrollHeight
+          var scrollTop = this.root.scrollTop
+          if(scrollTop + clientHeight >= scrollHeight) {
+            
+            this.loading = true
+            this.offset = this.offset + this.limit ;
+            axios.get('http://localhost:3000/artist/list',{
+              params:{
+                cat: cat,
+                initial: initial,
+                offset: this.offset,
+                limit: this.limit
+              }
+            }).then((result) => {
+              let res = result.data
+              if(res.code == 200) {
+                this.singList = this.singList.concat(res.artists)
+                this.singList.forEach((item) => {
+                              item.picUrl = item.img1v1Url
+                          })
+                this.loading = false
+              }
+            })
+          }
         }
-        let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
-        let initial = ''
-        if(this.filterList[this.filtercur] != '热门') {
-          initial = this.filterList[this.filtercur]
-        }
-        // let height = this.$refs.singer.offsetHeight
-        // var bottomSinger = this.$refs.list.$refs.li[this.$refs.list.$refs.li.length-2]
-        var clientHeight = document.documentElement.clientHeight
-        var scrollHeight = document.documentElement.scrollHeight
-        var scrollTop = document.documentElement.scrollTop
-        if(scrollTop + clientHeight >= scrollHeight) {
-          this.loading = true
-          this.offset = this.offset + this.limit ;
-          axios.get('http://localhost:3000/artist/list',{
-            params:{
-              cat: cat,
-              initial: initial,
-              offset: this.offset,
-              limit: this.limit
-            }
-          }).then((result) => {
-            let res = result.data
-            if(res.code == 200) {
-              this.singList = this.singList.concat(res.artists)
-              this.singList.forEach((item) => {
-                            item.picUrl = item.img1v1Url
-                        })
-              this.loading = false
-            }
-          })
-        }
-    }
+      }, 500);
+      
     },
     // 歌曲列表
     getSongList(data) {

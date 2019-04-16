@@ -1,41 +1,57 @@
 <template>
   <div class="nav">
       <ul class="navContainer">
-          <li>
+          <li class="navContent">
               <p>推荐</p> 
           </li>
-          <li>
+          <li class="navContent">
               <router-link to="/find"><i class="iconfont icon-yinle"></i>发现音乐</router-link>
           </li>
-          <li>
+          <!-- <li>
               <router-link to="/fm"><i class="iconfont icon-iconku-zhuanqu-"></i>私人FM</router-link>
-          </li>
-          <li>
+          </li> -->
+          <!-- <li>
               <router-link to="/video"><i class="iconfont icon-shipin1"></i>视频</router-link>
-          </li>
-          <li>
+          </li> -->
+          <li class="navContent">
               <router-link to="/friend"><i class="iconfont icon-pengyou"></i>朋友</router-link>
           </li>
-          <li>
-              <p>舞蹈音乐</p> 
+          <li class="navContent">
+              <p>我的音乐</p> 
           </li>
-          <li>
+          <!-- <li>
               <router-link to="/localmusic"><i class="iconfont icon-bendiyinle"></i>本地音乐</router-link>
-          </li>
-          <li>
+          </li> -->
+          <!-- <li>
               <router-link to="/download"><i class="iconfont icon-xiazai"></i>下载管理</router-link>
-          </li>
-          <li v-show="userName">
+          </li> -->
+          <!-- <li v-show="userName">
               <router-link to="/cloud"><i class="iconfont icon-yun"></i>我的音乐云盘</router-link>
-          </li>
-          <li v-show="userName">
+          </li> -->
+          <li v-show="userName" class="navContent">
               <router-link to="/collection"><i class="iconfont icon-wodeshoucang"></i>我的收藏</router-link>
           </li>
-          <li>
-              <router-link to="/createdSongList">创建的歌单<span><i class="iconfont icon-plus-"></i><i class="iconfont icon-you"></i></span></router-link>
+          <li class="navContent">
+              <a href="javascript:;" @click="showCreate = !showCreate">创建的歌单<span><i class="iconfont icon-plus-"></i><i class="iconfont icon-you" v-if="!showCreate"></i><i class="iconfont icon-down"  v-if="showCreate"></i></span></a>
+              <div class="CSContainer" v-if="showCreate">
+                  <router-link :to="`/create/${loveId}`" class="myItem alignCenter">
+                      <i class="iconfont icon-xinaixin1"></i>
+                      <p class="myTitle">我喜欢的音乐</p>
+                  </router-link>
+                  <router-link v-for="item in createList" :key="item.id" :to="`/create/${item.id}`" class="myItem alignCenter">
+                      <i class="iconfont icon-gedan"></i>
+                      <p class="myTitle">{{item.name}}</p>
+                  </router-link>
+              </div>
           </li>
-          <li v-show="userName">
-              <router-link to="/collectionSongList">收藏的歌单<i class="iconfont icon-you"></i></router-link>
+          <li v-show="userName" class="navContent">
+              <a href="javascript:;"  @click="showCollect = !showCollect">收藏的歌单<i class="iconfont icon-you"  v-if="!showCollect"></i><i class="iconfont icon-down"  v-if="showCollect"></i></a>
+                <div class="CSContainer" v-if="showCollect">
+                    <router-link v-for="item in collectList" :key="item.id" :to="`/collect/${item.id}`" class="myItem alignCenter">
+                        <i class="iconfont icon-gedan"></i>
+                        <p class="myTitle">{{item.name}}</p>
+                    </router-link>
+              </div>
           </li>
       </ul>
       <div class="playWindow alignCenter" v-if="currentSong.duration">
@@ -54,20 +70,55 @@
 
 <script>
 import {mapGetters} from 'vuex'
-
+import axios from 'axios'
 
 export default {
     computed: {
         ...mapGetters([
             'userName',
+            'userId',
             'currentSong'
         ])
+    },
+    data() {
+        return {
+            showCreate: false,
+            showCollect: false,
+            loveId:'',
+            createList:[],
+            collectList:[]
+        }
+    },
+    created() {
+        this.initCreate()
     },
     methods: {
         toSongDetail() {
             this.$router.push({
                 name:'songDetail',
                 params:this.currentSong.mid
+            })
+        },
+        initCreate() {
+
+            axios.get('http://localhost:3000/user/playlist',{
+                params:{
+                    uid: this.userId
+                }
+            }).then((result) => {
+                let res = result.data
+                if(res.code === 200 ) {
+                    let list = res.playlist
+                    list.forEach((item) => {
+                        if(item.userId === this.userId) {
+                            this.createList.push(item)
+                        }else {
+                            this.collectList.push(item)
+                        }
+                    })
+                    this.loveId = this.createList[0].id
+                    this.createList = this.createList.slice(1,this.createList.length)
+                }
             })
         }
     }
@@ -83,7 +134,7 @@ export default {
     height: 100%;
     border-right: 1px solid #E1E1E2;
     .navContainer {
-        li {
+         .navContent {
             font-size: 13px;
             p {
                 padding: 10px 0 10px 20px;
@@ -140,6 +191,29 @@ export default {
                 .iconfont {
                         font-size: 13px;
                     }
+            }
+            .CSContainer {
+                .myItem {
+                    margin: 0;
+                    padding: 0;
+                    justify-content: flex-start;
+                    .iconfont {
+                        font-size: 13px;
+                        margin-left: 20px;
+                    }
+                    .myTitle {
+                        padding-left: 0;
+                        color: rgba(0,0,0,0.7);
+                        width: 140px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                    &:hover{
+                        color: rgb(0,0,0);
+                        transition: color .2s ease-in;
+                    }
+                }
             }
         }
     }

@@ -171,8 +171,9 @@ export default {
                 let res = result.data
                 if(res.code == 200) {
                     this.id = res.account.id
-                    this.setUserName(localStorage.getItem("username"),);
-                    this.setPassword(localStorage.getItem("password"));
+                    this.setUserName(localStorage.getItem("username"))
+                    this.setPassword(localStorage.getItem("password"))
+                    this.setUserId(res.profile.userId)
                     this.setNickName(res.profile.nickname);
                     this.setAvatarUrl(res.profile.avatarUrl);
 
@@ -204,6 +205,7 @@ export default {
                     this.setUserName(this.username)
                     this.setPassword(this.password)
                     this.setNickName(res.profile.nickname)
+                    this.setUserId(res.profile.userId)
                     this.setAvatarUrl(res.profile.avatarUrl)
 
 
@@ -334,6 +336,7 @@ export default {
         ...mapMutations({
             setUserName: 'SET_USERNAME',
             setNickName: 'SET_NICKNAME',
+            setUserId: 'SET_USERID',
             setAvatarUrl: 'SET_AVATARURL',
             setPassword: 'SET_PASSWORD',
             set_collectSongList:'SET_COLLECTSONGLIST',

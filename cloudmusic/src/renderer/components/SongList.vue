@@ -37,7 +37,7 @@
                       添加标签
                   </p>
               </template>
-              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单' ,show=false">
+              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单' ,initSongList(),show=false">
                   全部歌单
               </div>
               <div class="item">

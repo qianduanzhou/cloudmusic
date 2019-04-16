@@ -4,6 +4,8 @@ export const SET_USERNAME = 'SET_USERNAME'
 
 export const SET_NICKNAME = 'SET_NICKNAME'
 
+export const SET_USERID = 'SET_USERID'
+
 export const SET_AVATARURL = 'SET_AVATARURL'
 
 export const SET_PASSWORD = 'SET_PASSWORD'
@@ -32,3 +34,4 @@ export const SET_CURRENT_INDEX = 'SET_CURRENT_INDEX'
 export const SET_AUDIO = 'SET_AUDIO'
 
 export const SET_PLAYHISTORYLIST = 'SET_PLAYHISTORYLIST'
+

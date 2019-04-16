@@ -1,5 +1,6 @@
 export const userName = state => state.userInfo.userName
 export const nickName = state => state.userInfo.nickName
+export const userId = state => state.userInfo.userId
 export const avatarUrl = state => state.userInfo.avatarUrl
 export const password = state => state.userInfo.password
 export const collectSongList = state => state.userInfo.collectSongList
@@ -20,4 +21,5 @@ export const playHistoryList = state => state.songs.playHistoryList
 export const currentSong = (state) => {
     return state.songs.playList[state.songs.currentIndex] || {}
 }
+
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="find">
+  <div class="find" ref="find">
       <nav>
           <ul class="allCenter navContainer">
               <li>
@@ -8,27 +8,40 @@
               <li>
                   <router-link to="/find/songlist">歌单</router-link>
               </li>
-              <li>
+              <!-- <li>
                   <router-link to="/find/transceiver">主播电台</router-link>
-              </li>
+              </li> -->
               <li>
                   <router-link to="/find/rankinglist">排行榜</router-link>
               </li>
               <li>
                   <router-link to="/find/singer">歌手</router-link>
               </li>
-              <li>
+              <!-- <li>
                   <router-link to="/find/newmusic">最新音乐</router-link>
-              </li>
+              </li> -->
           </ul>
       </nav>
-      <router-view :key="Math.random()"/>
+      <router-view :key="Math.random()" :root="root"/>
   </div>
 </template>
 
 <script>
+import {mapMutations,mapGetters} from 'vuex'
 export default {
-
+    props:['root'],
+    computed: {
+        ...mapGetters([
+            'scroll'
+        ])
+    },
+    mounted() {
+    },
+    methods: {
+        ...mapMutations({
+            set_scroll:'SET_SCROLL'
+        })
+    }
 }
 </script>
 

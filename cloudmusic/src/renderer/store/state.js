@@ -1,6 +1,7 @@
 const state = {
     userInfo:{
         userName:'',
+        userId:'',
         nickName:'',
         password:'',
         avatarUrl:'',
@@ -18,6 +19,6 @@ const state = {
         mode: 'sequence',
         currentIndex: -1,
         audio:{}
-    }
+    },
 }
 export default state

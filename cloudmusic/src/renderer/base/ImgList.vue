@@ -1,6 +1,6 @@
 <template>
   <div class="list">
-      <ul class="listContainer">
+      <ul class="listContainer spCenter">
           <slot name="specail"></slot>      
           <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}" @click="getData(item)"
           v-for='item in list' :key='item.id'
@@ -9,6 +9,10 @@
             <p :style="{'font-size':`${fontsize}px`}" v-if="item.name">{{item.name}}</p>
             <p :style="{'font-size':`${fontsize}px`}" v-if="item.nickname">{{item.nickname}}</p>
           </li>
+          <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}"></li>
+          <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}"></li>
+          <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}"></li>
+          <li :style="{width:listWidth + '%','border-radius':borderRadius+'px'}"></li>
       </ul>
   </div>
 </template>
@@ -31,12 +35,7 @@ export default {
     borderRadius:{
       type:Number,
       default:20
-    }
-  },
-  data() {
-    return {
-
-    }
+    },
   },
   methods: {
     getData(data) {
@@ -52,15 +51,13 @@ export default {
     .listContainer {
       width: 100%;
       margin-top: 10px;
-      display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
       li {
-        cursor: pointer;
         position: relative;
         padding-bottom: 10px;
         margin-bottom: 20px;
         img {
+          cursor: pointer;
           width: 100%;
           border: 1px solid #E1E1E2;
         }
@@ -69,6 +66,7 @@ export default {
           margin-right: 3px;
         }
         p {
+          cursor: pointer;
           padding: 3px;
           line-height: 20px;
           font-size: 14px;

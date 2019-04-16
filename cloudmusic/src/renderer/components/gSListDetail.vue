@@ -7,12 +7,12 @@
       <main class="gsdMain">
           <ul class="gsdContainer spCenter">
               <li class="gsdContent alignCenter" v-for="item in GSList" :key="item.id">
-                  <img v-lazy="item.coverImgUrl" class="gsdPic">
+                  <img v-lazy="item.coverImgUrl" class="gsdPic"  @click="toSongList(item.id)">
                   <i class="iconfont icon-yinle"></i>
                   <span class="gsdNum">{{item.playCount | wan}}</span>
                   <div class="gsdIns">
                       <span class="gsdIcon">{{item.tag}}</span>
-                      <p class="gsldTitle">{{item.name}}</p>
+                      <p class="gsldTitle" @click="toSongList(item.id)">{{item.name}}</p>
                       <p class="gsldName">by&nbsp;&nbsp;{{item.creator.nickname}}</p>
                       <p class="gsldIns">{{item.copywriter}}</p>
                   </div>
@@ -27,7 +27,7 @@
                       选择你喜欢的分类
                   </p>
               </template>
-              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单' ,show=false">
+              <div class="allList" :class="{'cateActive': name=='全部歌单'}" @click="name = '全部歌单',initGSLDList() ,showDrop=false">
                   全部歌单
               </div>
               <div class="item">
@@ -97,6 +97,9 @@ export default {
                 let res = result.data
                 this.GSList = res.playlists
             })
+        },
+        toSongList(id) {
+            this.$router.push(`/find/songlist/${id}`)
         }
     }
 }
@@ -137,8 +140,9 @@ export default {
                 width: 360px;
                 margin: 20px 0;
                 .gsdPic {
-                width: 100px;
-                height: 100px;
+                    cursor: pointer;
+                    width: 100px;
+                    height: 100px;
                 }
                 .icon-yinle,.gsdNum{
                     position: absolute;
@@ -164,6 +168,7 @@ export default {
                         margin-right: 5px;
                     }
                     .gsldTitle {
+                        cursor: pointer;
                         display: inline-block;
                         position: relative;
                         top: 2px;
@@ -175,6 +180,7 @@ export default {
                         font-size: 13px;
                     }
                     .gsldName {
+                        cursor: pointer;
                         color: #555555;
                         margin: 10px 0 20px 0;
                         font-size: 12px;

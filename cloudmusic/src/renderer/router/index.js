@@ -11,6 +11,8 @@ import SongList from '../components/SongList'
 import SongListDetail from '../components/SongListDetail'
 import DayRecSong from '../components/DayRecSong'
 import gSListDetail from '../components/gSListDetail'
+import RankingList from '../components/RankingList'
+import RankingListDetail from '../components/RankingListDetail'
 
 
 Vue.use(Router)
@@ -60,6 +62,16 @@ export default new Router({
         {
           path:'good',
           component:gSListDetail
+        },
+        {
+          path:'rankinglist',
+          component:RankingList,
+          children: [
+            {
+              path:':idx/:id',
+              component:RankingListDetail
+            },
+          ]
         }
       ]
     },
