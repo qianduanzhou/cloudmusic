@@ -268,7 +268,6 @@ export default {
                 if(res.code === 200) {
                     let introduction = res.introduction
                     this.introduction = introduction.filter((item) => {
-                       
                         item.txt = item.txt.split('\n')
                         
                         let item2 = item.txt.map((item) => {

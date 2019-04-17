@@ -1,9 +1,11 @@
 <template>
   <div class="bottom alignCenter scrollStyle" ref="bottom">
     <div class="playControl">
-      <i class="iconfont icon-shangyishou prev" @click="prev"></i>
+      <i class="iconfont icon-shangyishou prev" @click="prev" v-if="!isPreNext"></i>
+      <i class="iconfont icon-icon-test1 prev"  style="font-size:32px;" v-if="isPreNext"></i>
       <i class="iconfont palyClass play" :class="palyClass" @click="playState"></i>
-      <i class="iconfont icon-xiayishou next" @click="next"></i>
+      <i class="iconfont icon-xiayishou next" @click="next" v-if="!isPreNext"></i>
+      <i class="iconfont icon-icon-test1 next" style="font-size:32px;" v-if="isPreNext"></i>
     </div>
     
     <div class="timeContainer alignCenter">
@@ -105,6 +107,7 @@ export default {
       currentTime:0,
       timeSchedule:0,
       showDrop:false,
+      isPreNext:false,
       mode:[
         'sequence',
         'random',
@@ -284,11 +287,13 @@ export default {
     loop() {
       this.$refs.audio.currentTime = 0
       this.$refs.audio.play()
+      this.isPreNext = false
     },
     next() {
       if(!this.currentSong.duration) {
         return 
       }
+      this.isPreNext = true
       this.setPlayState(true)
       if(this.playList === 1 || this.nowMode === this.mode[2]) {
         this.loop()
@@ -310,6 +315,7 @@ export default {
       if(!this.currentSong.duration) {
         return 
       }
+      this.isPreNext = true;
       this.setPlayState(true)
       if(this.playList === 1  || this.nowMode === this.mode[2]) {
         this.loop()
@@ -342,12 +348,6 @@ export default {
       }
     },
     _getUrl(mid,index) {
-      // if(this.playList[index].url) {
-      //   let list = this.playList.slice(0)
-      //   this.setPlayList(list)
-      //   this.setCurrentIndex(index)
-      //   return 
-      // }
       axios.get('http://localhost:3000/song/url',{
         params: {
             id: mid
@@ -361,6 +361,7 @@ export default {
               list:this.sequenceList,
               index:index
             })
+            this.isPreNext = false;
         })
     },
     ...mapActions([

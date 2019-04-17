@@ -1,5 +1,5 @@
 <template>
-  <div class="nav">
+  <div class="nav scrollStyle" ref="nav">
       <ul class="navContainer">
           <li class="navContent">
               <p>推荐</p> 
@@ -29,16 +29,16 @@
               <router-link to="/cloud"><i class="iconfont icon-yun"></i>我的音乐云盘</router-link>
           </li> -->
           <li v-show="userName" class="navContent">
-              <router-link to="/collection"><i class="iconfont icon-wodeshoucang"></i>我的收藏</router-link>
+              <router-link to="/mycreate"><i class="iconfont icon-wodeshoucang"></i>我的收藏</router-link>
           </li>
-          <li class="navContent">
+          <li v-show="userName" class="navContent">
               <a href="javascript:;" @click="showCreate = !showCreate">创建的歌单<span><i class="iconfont icon-plus-"></i><i class="iconfont icon-you" v-if="!showCreate"></i><i class="iconfont icon-down"  v-if="showCreate"></i></span></a>
-              <div class="CSContainer" v-if="showCreate">
-                  <router-link :to="`/create/${loveId}`" class="myItem alignCenter">
+              <div class="CSContainer" v-if="showCreate && uid">
+                  <router-link :to="`/create/${loveId}?me=true`" class="myItem alignCenter">
                       <i class="iconfont icon-xinaixin1"></i>
                       <p class="myTitle">我喜欢的音乐</p>
                   </router-link>
-                  <router-link v-for="item in createList" :key="item.id" :to="`/create/${item.id}`" class="myItem alignCenter">
+                  <router-link v-for="item in createList" :key="item.id" :to="`/create/${item.id}?me=true`" class="myItem alignCenter">
                       <i class="iconfont icon-gedan"></i>
                       <p class="myTitle">{{item.name}}</p>
                   </router-link>
@@ -47,14 +47,14 @@
           <li v-show="userName" class="navContent">
               <a href="javascript:;"  @click="showCollect = !showCollect">收藏的歌单<i class="iconfont icon-you"  v-if="!showCollect"></i><i class="iconfont icon-down"  v-if="showCollect"></i></a>
                 <div class="CSContainer" v-if="showCollect">
-                    <router-link v-for="item in collectList" :key="item.id" :to="`/collect/${item.id}`" class="myItem alignCenter">
+                    <router-link v-for="item in collectList" :key="item.id" :to="`/create/${item.id}`" class="myItem alignCenter">
                         <i class="iconfont icon-gedan"></i>
                         <p class="myTitle">{{item.name}}</p>
                     </router-link>
               </div>
           </li>
       </ul>
-      <div class="playWindow alignCenter" v-if="currentSong.duration">
+      <div class="playWindow alignCenter" ref="playWindow" v-if="currentSong.duration">
           <div class="pic" :style="{'backgroundImage': `url(${currentSong.picUrl})`}">
               <i class="iconfont icon-fangda" @click="toSongDetail"></i>
           </div>
@@ -62,14 +62,15 @@
               <p class="name">{{currentSong.name}}</p>
               <p class="singer">{{currentSong.singer}}</p>
           </div>
-          <i class="iconfont icon-xinaixin1 love"></i>
+          <i class="love iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" @click="collect(currentSong.mid)" :plain="true"></i>
+          <i class="love iconfont icon-xinaixin" style="color:red; right:0;" :plain="true" @click="canCollect(currentSong.mid)" v-if="isCollect(currentSong.mid)"></i>
           <i class="iconfont icon-fenxiang share"></i>
       </div>
   </div>
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import {mapGetters,mapMutations} from 'vuex'
 import axios from 'axios'
 
 export default {
@@ -77,7 +78,8 @@ export default {
         ...mapGetters([
             'userName',
             'userId',
-            'currentSong'
+            'currentSong',
+            'collectSong'
         ])
     },
     data() {
@@ -90,9 +92,24 @@ export default {
         }
     },
     created() {
+        this.uid = parseInt(localStorage.getItem('userId'))
         this.initCreate()
     },
+    mounted() {
+        this.init()
+    },
     methods: {
+        init() {
+            this.$refs.nav.style.height = `${document.documentElement.clientHeight - 160}px`
+            window.onresize = () => {
+            setTimeout(() => {
+                this.$refs.nav.style.height = `${document.documentElement.clientHeight - 160}px`
+            }, 200);
+            }
+        },
+        isCollect(id) {
+            return this.collectSong.includes(id)
+        },
         toSongDetail() {
             this.$router.push({
                 name:'songDetail',
@@ -100,27 +117,71 @@ export default {
             })
         },
         initCreate() {
-
             axios.get('http://localhost:3000/user/playlist',{
                 params:{
-                    uid: this.userId
+                    uid: this.uid
                 }
-            }).then((result) => {
+                }).then((result) => {
                 let res = result.data
                 if(res.code === 200 ) {
                     let list = res.playlist
                     list.forEach((item) => {
-                        if(item.userId === this.userId) {
+                        if(item.userId === this.uid) {
                             this.createList.push(item)
                         }else {
                             this.collectList.push(item)
                         }
                     })
+                    console.log(this.createList)
                     this.loveId = this.createList[0].id
                     this.createList = this.createList.slice(1,this.createList.length)
                 }
+                })
+        },
+        collect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:true,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                collectList.push(id)
+                this.set_collectSong(collectList)
             })
-        }
+            this.$message({
+                type:'success',
+                message:'收藏成功',
+                center: true
+            });
+        },
+        canCollect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:false,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                let index = collectList.findIndex((item) => {
+                    return item == id
+                })
+                collectList.splice(index,1)
+                this.set_collectSong(collectList)
+            })
+            this.$message({
+                type:'success',
+                message:'取消收藏成功',
+                center: true
+            });
+        },
+        ...mapMutations({
+            set_collectSong:'SET_COLLECTSONG'
+        })
     }
 }
 </script>
@@ -131,8 +192,9 @@ export default {
     z-index: 1;
     box-sizing: border-box;
     width: 200px;
-    height: 100%;
+    height: 600px;
     border-right: 1px solid #E1E1E2;
+    overflow-y: scroll;
     .navContainer {
          .navContent {
             font-size: 13px;
@@ -222,7 +284,7 @@ export default {
         bottom: 50px;
         width: 200px;
         height: 60px;
-        z-index: 55;
+        z-index: 999;
         border-top: 1px solid #E1E1E2;
         .pic {
             cursor: pointer;
@@ -257,6 +319,10 @@ export default {
                 cursor: pointer;
                 font-size: 12px;
                 padding-bottom: 7px;
+                width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .singer {
                 cursor: pointer;
@@ -268,6 +334,7 @@ export default {
             }
         }
         i {
+            cursor: pointer;
             position: absolute;
             right: 5px;
             font-size: 13px;

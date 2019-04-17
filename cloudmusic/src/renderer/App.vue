@@ -1,14 +1,14 @@
 <template>
   <div id="app">
     <music-header></music-header>
-    <music-nav></music-nav>
+    <music-nav :key="uid"></music-nav>
     <div class="RootContainer" ref="RootContainer" 
       style=
       "height: 570px;
       width: 840px;
       margin-top: 50px;
       margin-bottom: 50px;">
-      <router-view :root="$refs.RootContainer"></router-view>
+      <router-view :root="$refs.RootContainer" :key="Math.random()"></router-view>
     </div>
     <play-bottom></play-bottom>
   </div>
@@ -30,6 +30,9 @@
       MusicHeader,
       MusicNav,
       PlayBottom
+    },
+    created() {
+      this.uid = parseInt(localStorage.getItem('userId'))
     },
     mounted() {
       this.init()

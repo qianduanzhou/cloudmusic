@@ -13,6 +13,8 @@ import DayRecSong from '../components/DayRecSong'
 import gSListDetail from '../components/gSListDetail'
 import RankingList from '../components/RankingList'
 import RankingListDetail from '../components/RankingListDetail'
+import MyCreate from '../components/MyCreate'
+import AlbumDetail from '../components/AlbumDetail'
 
 
 Vue.use(Router)
@@ -81,9 +83,19 @@ export default new Router({
       component:SongDetail
     },
     { 
-      name:'fm',
-      path: "/fm",
-      component:Fm
+      name:'create',
+      path: "/create/:id",
+      component:SongListDetail
+    },
+    {
+      name:'myCreate',
+      path:'/mycreate',
+      component:MyCreate
+    },
+    {
+      name:'album',
+      path:'/album/:id',
+      component:AlbumDetail
     },
     {
       name:'error',

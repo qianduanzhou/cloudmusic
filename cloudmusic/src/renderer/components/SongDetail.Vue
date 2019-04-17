@@ -12,7 +12,11 @@
                       </div>
                   </div>
                   <footer class="songControl allCenter">
-                      <div class="item allCenter"><i class="iconfont icon-xinaixin1"></i><p>喜欢</p></div>
+                      <div class="item allCenter">
+                          <i class=" iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" @click="collect(currentSong.mid)" :plain="true"></i>
+                          <i class=" iconfont icon-xinaixin" style="color:red;" :plain="true" @click="canCollect(currentSong.mid)" v-if="isCollect(currentSong.mid)"></i>
+                          <p>喜欢</p>
+                      </div>
                       <div class="item allCenter"><i class="iconfont icon-shoucanggedan"></i><p>收藏</p></div>
                       <div class="item allCenter"><i class="iconfont icon-xiazai"></i><p>下载</p></div>
                       <div class="item allCenter"><i class="iconfont icon-fenxiang"></i><p>分享</p></div>
@@ -104,7 +108,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters,mapMutations} from 'vuex'
 import {bfLyc} from '../common/utils'
 import Comment from '../base/comment'
 import Same from '../base/Same'
@@ -135,7 +139,8 @@ export default {
         ...mapGetters([
             'currentSong',
             'playing',
-            'audio'
+            'audio',
+            'collectSong'
         ]),
         playClass() {
             return this.playing ? 'play' : 'pause'
@@ -221,6 +226,50 @@ export default {
                 }
             })
         },
+        isCollect(id) {
+            return this.collectSong.includes(id)
+        },
+        collect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:true,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                collectList.push(id)
+                this.set_collectSong(collectList)
+            })
+            this.$message({
+                type:'success',
+                message:'收藏成功',
+                center: true
+            });
+        },
+        canCollect(id) {
+            axios.get('http://localhost:3000/like',{
+                params: {
+                    like:false,
+                    id: id,
+                    timestamp: (new Date()).getTime()
+                },
+            }).then((result) => {
+                let res = result.data
+                let collectList = this.collectSong.slice(0)
+                let index = collectList.findIndex((item) => {
+                    return item == id
+                })
+                collectList.splice(index,1)
+                this.set_collectSong(collectList)
+            })
+            this.$message({
+                type:'success',
+                message:'取消收藏成功',
+                center: true
+            });
+        },
         // 调到指定歌词
         toWord() {
             var _this = this
@@ -267,7 +316,10 @@ export default {
                     this.$refs.container.scrollTop = this.$refs.comment.offsetTop - 10
                 }
             })
-        }
+        },
+        ...mapMutations({
+            set_collectSong:'SET_COLLECTSONG'
+        })
     }
 }
 </script>
@@ -379,6 +431,7 @@ export default {
                     margin-top: 45px;
                     justify-content: space-between;
                     .item {
+                        cursor: pointer;
                         width: 18%;
                         border: 1px solid #BEBFC2;
                         padding: 5px;
@@ -422,19 +475,27 @@ export default {
                         border-radius: 2px;
                     }
                     .itemContainer {
+                        width: 100%;
                         font-size: 12px;
                         margin-top: 15px;
                         .item {
-                            margin-right: 5px;
+                            width: 120px;
+                            margin-right: 20px;
                             p {
+                                width: 40px;
                                 color: #424343;
                                 margin-right: 5px;
                             }
                             b {
                                 color:#0849AB;
+                                cursor: pointer;
+                                width: 80px;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
                             }
                             &:last-child {
-                                margin-left: 150px;
+                                margin-left: 20px;
                             }
                         }
                     }

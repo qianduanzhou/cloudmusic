@@ -86,7 +86,7 @@
       
       <div class="comContainer" v-if="cur == 1">
           <p class="comtitle" ref = 'comment'>
-              精彩评论
+              最新评论
           </p>
           <comment :list="commentList" :songListId="parseInt(this.$route.params.idx)" @deleteComment="deleteCom"></comment>
           <el-pagination

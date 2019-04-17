@@ -172,7 +172,6 @@ export default {
                 if(res.code == 200) {
                     this.id = res.account.id
                     this.setUserName(localStorage.getItem("username"))
-                    this.setPassword(localStorage.getItem("password"))
                     this.setUserId(res.profile.userId)
                     this.setNickName(res.profile.nickname);
                     this.setAvatarUrl(res.profile.avatarUrl);
@@ -203,7 +202,6 @@ export default {
                 if(res.code == 200) {
                     this.id = res.account.id
                     this.setUserName(this.username)
-                    this.setPassword(this.password)
                     this.setNickName(res.profile.nickname)
                     this.setUserId(res.profile.userId)
                     this.setAvatarUrl(res.profile.avatarUrl)
@@ -213,6 +211,7 @@ export default {
                     localStorage.setItem("nickName", this.nickName)
                     localStorage.setItem("avatarUrl", this.avatarUrl)
                     localStorage.setItem("password", this.password)
+                    localStorage.setItem("userId", res.profile.userId)
                     this.username = ''
                     this.password = ''
                 }    
@@ -323,13 +322,14 @@ export default {
                     this.setUserName('')
                     this.setNickName('')
                     this.setAvatarUrl('')
-                    this.setPassword('')
                     localStorage.setItem("username", '');
                     localStorage.setItem("nickName", '');
                     localStorage.setItem("avatarUrl", '');
                     localStorage.setItem("password", '');
+                    localStorage.setItem("userId", '');
                     this.drap = false;
                     this.logoutVisible = false
+                    this.$router.push('/find/recommend')
                 }
             })
         },
@@ -501,6 +501,7 @@ export default {
                 font-weight: bold;
                 margin-left: 5px;
                 line-height: 25px;
+                font-family:"幼圆";
             }
         }
         .searchContainer {

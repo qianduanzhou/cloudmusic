@@ -2,54 +2,32 @@
 
   <div class="SongListDetail scrollStyle" ref="SongListDetail" style="width: 100%;height: 100%;">
       <header class="SongListDetailHeader">
-          <div class="listPic bgc" :style="{backgroundImage:`url(${detail.coverImgUrl})`}"></div>
+          <div class="listPic bgc" :style="{backgroundImage:`url(${detail.picUrl})`}"></div>
           <div class="listDetailContainer">
               <div class="titleContainer alignCenter">
-                  <span class="SongListsign">歌单</span>
+                  <span class="SongListsign">专辑</span>
                   <p class="mainTitle">{{detail.name}}</p>
-                  <div class="numData">
-                      <p class="title">歌曲数</p>
-                      <p class="num">{{detail.trackCount}}</p>
-                  </div>
-                  <div class="numData">
-                      <p class="title">播放数</p>
-                      <p class="num">{{detail.playCount | wan}}</p>
-                  </div>
-              </div>
-              <div class="avatar alignCenter">
-                  <div class="avaPic bgc" :style="{'backgroundImage':`url(${detail.creator.avatarUrl})`}"></div>
-                  <p class="avaName">{{detail.creator.nickname}}</p>
-                  <p class="createTime">{{detail.createTime | middleTime}}创建</p>
               </div>
               <div class="controlContainer alignCenter">
                   <div class="item alignCenter">
                       <i class="iconfont icon-bofang" @click="playAll"></i><p @click="playAll">播放全部</p><i class="add">+</i>
                   </div>
-                  <div class="item alignCenter" :plain="true" @click="collect" v-if="!isCollect">
-                      <i class="iconfont icon-shoucanggedan"></i><p>收藏({{collectNum}})</p>
-                  </div>
-                  <div class="item alignCenter" v-if="isCollect" @click="canCollect" :plain="true">
-                      <i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i><p>已收藏({{collectNum}})</p>
+                  <!-- <div class="item alignCenter" :plain="true" @click="collect" v-if="!isCollect">
+                      <i class="iconfont icon-shoucanggedan"></i><p>收藏</p>
+                  </div> -->
+                  <div class="item alignCenter" :plain="true">
+                      <i class="iconfont icon-xiangxiayuanjiantouxiajiantouxiangxiamianxing"></i><p>已收藏({{2741654}})</p>
                   </div>
                   <div class="item alignCenter">
-                       <i class="iconfont icon-fenxiang"></i><p>分享({{detail.shareCount}})</p>
+                       <i class="iconfont icon-fenxiang"></i><p>分享({{detail.info.shareCount}})</p>
                   </div>
                   <div class="item alignCenter">
                         <i class="iconfont icon-xiazai"></i><p>下载全部</p>
                   </div>
               </div>
-              <div class="tagcontainer alignCenter">
-                  <p class="title">标签</p>
-                  <div class="tagcontents">
-                    <span class="tagcontent" v-for="item in detail.tags" :key="item">&nbsp;<b class="tag">{{item}}</b>&nbsp;/</span>
-                  </div>  
-              </div>
-              <div class="abstruct spCenter" :class="dropCls">
-                    <ul class="abstructContent">
-                      简介：<li class="abItem" v-for="(item,index) in description" :key="index" v-html="item">
-                      </li>
-                    </ul>
-                  <i class="iconfont" :class="showCls" @click="wordHide = !wordHide"></i>
+              <div class="alSingerDetail">
+                  <p class="alSinger">歌手：{{detail.artist.name}}</p>
+                  <p class="alTime">时间：{{detail.publishTime | middleTime}}</p>
               </div>
           </div>
       </header>
@@ -57,10 +35,6 @@
           <nav class="songListNav alignCenter">
               <div v-for="(item,index) in navList" :key = "item" @click="cur = index" class="Navitem" :class="{'NavActive':cur == index}">{{item}}</div>
           </nav>
-          <div class="searchSong" v-if="cur == 0">
-              <input type="text" class="searchBox" placeholder="搜索歌单音乐" v-model="searchContent" @keyup="search">
-              <i class="iconfont icon-sousuo" @click="search"></i>
-          </div>
       </main>
       <div class="table alignCenter" v-if="cur == 0">
           <div class="tableItem tControl">操作</div>
@@ -98,14 +72,14 @@
             :total="total">
         </el-pagination>
       </div>
-      <div class="collecter"  v-if="cur == 2">
-          <ImaList :list="collecterList" :listWidth="20">
-              <template v-slot:img="imgs">
-                  <img v-lazy="imgs.imgs.avatarUrl" style="border-radius:50%;margin:0 auto;width:40%;display:block;">
-              </template>
-          </ImaList>
-          <div v-loading="loading" v-if="loading"></div>
-          <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;">没有更多评论了~~~</p>
+
+      <div class="albumDetail" v-if="cur == 2">
+          <p>专辑介绍</p>
+          <ul class="detailContainer">
+              <li class="detailContent" v-for="(item,index) in description" :key="index">
+                  {{item}}
+              </li>
+          </ul>
       </div>
   </div>
 </template>
@@ -125,7 +99,6 @@ export default {
             songList : [],
             songListc : [],
             commentList:[],
-            collecterList: [],
             detail: {},
             collectNum:0,
             limit:20,
@@ -140,7 +113,7 @@ export default {
             navList: [
                 '歌曲列表',
                 '评论',
-                '收藏者'
+                '专辑详情'
             ]
        }
     },
@@ -153,8 +126,6 @@ export default {
         this.init()
         this.initSongListDetail()
         this.initCommentList()
-        this.initCollecter()
-        this.moreCollecter()
     },
     computed: {
         ...mapGetters([
@@ -166,10 +137,10 @@ export default {
         dropCls() {
             return this.wordHide?'up':'drop'
         },
-        isCollect() {
-            let id = parseInt(this.$route.params.id)
-            return this.collectSongList.includes(id)
-        }
+        // isCollect() {
+        //     let id = parseInt(this.$route.params.id)
+        //     return this.collectSongList.includes(id)
+        // }
     },
     methods: {
         
@@ -185,26 +156,23 @@ export default {
         },
         async initSongListDetail() {
             let id = this.$route.params.id
-            await axios.get('http://localhost:3000/playlist/detail',{
+            await axios.get('http://localhost:3000/album',{
                 params:{
                     id: id
                 }
             }).then((result) => {
                 let res = result.data
                 if(res.code === 200) {
-                    this.detail = res.playlist
-                    this.collectNum = res.playlist.subscribedCount
-                    let des = res.playlist.description
-                    if(des) {
-                        des = des.split('\n')
-                        des.forEach((item,index) => {
-                            if(item == '') {
-                                des[index] = '&#8197;'
-                            }
-                        })
-                        this.description = des
-                    }
-                    this._normalizeSongList(this.detail.tracks).then((ret) => {
+                    this.detail = res.album
+                    let des = res.album.description
+                    des = des.split('\n')
+                    des.forEach((item,index) => {
+                        if(item == ' ') {
+                            des[index] = '&#8197;'
+                        }
+                    })
+                    this.description = des
+                    this._normalizeSongList(res.songs).then((ret) => {
                         this.songList = ret
                         this.songListc = ret
                     })
@@ -215,7 +183,7 @@ export default {
         },
         initCommentList() {
             let id = this.$route.params.id
-            axios.get('http://localhost:3000/comment/playlist',{
+            axios.get('http://localhost:3000/comment/album',{
                 params:{
                     id: id
                 }
@@ -228,50 +196,7 @@ export default {
             })
         },
 
-        initCollecter() {
-            let id = this.$route.params.id
-            axios.get('http://localhost:3000/playlist/subscribers',{
-                params: {
-                    id: id,
-                    limit: 50
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.collecterList = res.subscribers
-                    this.moreColl = res.more
-                }
-            })
-        },
-        moreCollecter() {
-            setTimeout(() => {
-                this.$refs.SongListDetail.onscroll = () => {
-                    let clientHeight = this.$refs.SongListDetail.clientHeight,
-                    scrollTop = this.$refs.SongListDetail.scrollTop,
-                    scrollHeight = this.$refs.SongListDetail.scrollHeight
-                    if(clientHeight + scrollTop >= scrollHeight && this.cur == 2 && this.moreColl) {
-                        let id = this.$route.params.id
-                        this.offset += 50
-                        axios.get('http://localhost:3000/playlist/subscribers',{
-                            params: {
-                                id: id,
-                                offset: this.offset
-                            }
-                        }).then((result) => {
-                            let res = result.data
-                            if(res.code === 200) {
-                                this.moreColl = res.more
-                                
-                                if(!this.moreColl) {
-                                    return this.loading = false
-                                }
-                                this.collecterList = this.collecterList.concat(res.subscribers)
-                            }
-                        })
-                    }
-                } 
-            }, 500);           
-        },
+
         async _normalizeSongList(list) {
             let ret = []
             for(let i = 0; i < list.length; i ++) {
@@ -306,69 +231,59 @@ export default {
                     })
                 })
         },
-        collect() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/playlist/subscribe',{
-                params: {
-                    t: 1,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
-                let collectList = this.collectSongList.slice(0)
-                collectList.push(id)
-                this.set_collectSongList(collectList)
-                this.collectNum += 1
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
-        },
-        canCollect() {
-            if(this.$route.query.me) {
-                this.$message({
-                    type:'error',
-                    message:'不能取消自己创建的歌单哦',
-                    center: true
-                });
-                return
-            }
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/playlist/subscribe',{
-                params: {
-                    t: 2,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
-                let collectList = this.collectSongList.slice(0)
-                let index = collectList.findIndex((item) => {
-                    return item == id
-                })
-                collectList.splice(index,1)
-                this.set_collectSongList(collectList)
-                this.collectNum -= 1
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
-        },
-        search() {
-            let ret = []
-            for(let i = 0;i < this.songList.length; i ++) {
-                if(this.songList[i].name.includes(this.searchContent)) {
-                    ret.push(this.songList[i])
-                }
-            }
-
-            this.songListc = ret
-        },
+        // collect() {
+        //     let id = parseInt(this.$route.params.id)
+        //     axios.get('http://localhost:3000/playlist/subscribe',{
+        //         params: {
+        //             t: 1,
+        //             id: id,
+        //             timestamp: (new Date()).getTime()
+        //         },
+        //     }).then((result) => {
+        //         let res = result.data
+        //         let collectList = this.collectSongList.slice(0)
+        //         collectList.push(id)
+        //         this.set_collectSongList(collectList)
+        //         this.collectNum += 1
+        //     })
+        //     this.$message({
+        //         type:'success',
+        //         message:'收藏成功',
+        //         center: true
+        //     });
+        // },
+        // canCollect() {
+        //     if(this.$route.query.me) {
+        //         this.$message({
+        //             type:'error',
+        //             message:'不能取消自己创建的歌单哦',
+        //             center: true
+        //         });
+        //         return
+        //     }
+        //     let id = parseInt(this.$route.params.id)
+        //     axios.get('http://localhost:3000/playlist/subscribe',{
+        //         params: {
+        //             t: 2,
+        //             id: id,
+        //             timestamp: (new Date()).getTime()
+        //         },
+        //     }).then((result) => {
+        //         let res = result.data
+        //         let collectList = this.collectSongList.slice(0)
+        //         let index = collectList.findIndex((item) => {
+        //             return item == id
+        //         })
+        //         collectList.splice(index,1)
+        //         this.set_collectSongList(collectList)
+        //         this.collectNum -= 1
+        //     })
+        //     this.$message({
+        //         type:'success',
+        //         message:'取消收藏成功',
+        //         center: true
+        //     });
+        // },
 
         changePage(index) {
             let offset = (index-1) * this.limit
@@ -387,10 +302,11 @@ export default {
         },
         sendComment() {
             let id = parseInt(this.$route.params.id)
+            console.log(id)
             axios.get('http://localhost:3000/comment',{
                 params: {
                     t: 1,
-                    type: 2,
+                    type: 3,
                     id: id,
                     content: this.commentContent,
                     timestamp: (new Date()).getTime()
@@ -406,6 +322,12 @@ export default {
                     this.commentContent = ''
                     this.commentList.unshift(res.comment)
                 }
+            }).catch((e) => {
+                this.$message({
+                    type:'info',
+                    message: '版权方要求，当前专辑需单独付费，购买数字专辑即可无限畅享',
+                    center: true
+                });
             })
         },
         deleteCom(id) {
@@ -458,41 +380,6 @@ export default {
                     font-weight: 600;
                     color:black;
                 }
-                .numData {
-                    font-size: 12px;
-                    color: #555555;
-                    padding: 0 10px;
-                    border-left: 1px solid #E1E1E2;
-                    position: absolute;
-                    right: 10px;
-                    &:nth-of-type(1){
-                        border-left:none;
-                        right: 70px;
-                    }
-                    .num {
-                        float: right;
-                        margin-top: 5px;
-                    }
-                }
-            }
-            .avatar {
-                margin-top: 15px;
-                .avaPic {
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                    border: 1px solid #ccc;
-                }
-                .avaName {
-                    margin-left: 10px;
-                    font-size: 15px;
-                    color:#444444;
-                }
-                .createTime {
-                    font-size: 12px;
-                    margin-left: 20px;
-                    color:#444444;
-                }
             }
             .controlContainer {
                 margin-top: 20px;
@@ -524,43 +411,7 @@ export default {
                     }
                 }
             }
-            .tagcontainer {
-                font-size: 12px;
-                margin-top: 25px;
-                .title {
-                    color:#555555;
-                }
-                .tagcontents {
-                    margin-left: 10px;
-                    .tagcontent {
-                        .tag {
-                            color:#0A63A8;
-                        } 
-                    }
-                }
-            }
-            
-            .abstruct {
-                width: 500px;
-                height: 32px;
-                margin-top: 10px;
-                font-size: 12px;
-                color:#333333;
-                overflow: hidden;
-                .abstructContent {
-                    width: 460px;
-                    .icon-down {
-                        margin-left: 100px;
-                    }
-                    .abItem{
-                        line-height: 17px;
-                        &:first-child{
-                            display: inline-block;
-                        }
-                    }
-                }
-                
-            }
+    
             .drop {
                 animation: drop .5s linear forwards;
             }
@@ -601,6 +452,14 @@ export default {
                     height: 100%;
                 }
             }
+            .alSingerDetail {
+                margin-top: 25px;
+                font-size: 13px;
+                color:#333;
+                .alSinger {
+                    margin: 10px 0;
+                }
+            }
         }
     }
     .songListMain {
@@ -632,30 +491,6 @@ export default {
                 }
             }
 
-        }
-        .searchSong {
-            margin-right: 30px;
-            .searchBox {
-                width: 170px;
-                height: 25px;
-                border:1px solid #E1E1E2;
-                padding-left: 15px;
-                border-radius: 20px;
-                box-sizing: border-box;
-                font-size: 12px;
-                outline: none;
-                &::placeholder {
-                    font-size: 12px;
-                    color:#CCCCCC;
-                }
-            }
-            .icon-sousuo {
-                cursor: pointer;
-                position: relative;
-                left: -25px;
-                top: 2px;
-                color:#CCCCCC;
-            }
         }
     }
     .table {
@@ -733,6 +568,22 @@ export default {
             margin-bottom: 10px;
         }
         
+    }
+    .albumDetail {
+        margin: 30px 0 0 30px;
+        p {
+            margin-bottom: 10px;
+            color:black;
+            font-weight: bold;
+        }
+        .detailContainer {
+            margin-left: 30px;
+            .detailContent {
+                line-height: 30px;
+                font-size: 15px;
+                color:#666666;
+            }
+        }
     }
 }
 </style>
