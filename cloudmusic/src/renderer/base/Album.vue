@@ -101,7 +101,7 @@ export default {
             this.Songsc = this.Songs.slice(0,50)
             this.all = false;
         },
-        playsong(index) {
+        async playsong(index) {
             let url = ''
             if(this.types === 4) {
                 axios.get('http://localhost:3000/song/url',{
@@ -115,6 +115,18 @@ export default {
                     this.insertSong(this.Songsc[index])
                 })
             }else {
+                if(!this.Songsc[index].picUrl) {
+                    let aid = this.Songsc[index].aid
+                    await axios.get('http://localhost:3000/album',{
+                        params: {
+                            id: aid
+                        }
+                    }).then((result) => {
+                        let res = result.data
+                        let picUrl = res.album.picUrl
+                        this.Songsc[index].picUrl = picUrl
+                    })
+                }
                 axios.get('http://localhost:3000/song/url',{
                     params: {
                         id: this.Songsc[index].mid
@@ -192,6 +204,7 @@ export default {
             width: 150px;
             height: 150px;
             margin-right: 50px;
+            cursor: pointer;
         }
         .songContainer {
             

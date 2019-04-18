@@ -15,7 +15,7 @@ import RankingList from '../components/RankingList'
 import RankingListDetail from '../components/RankingListDetail'
 import MyCreate from '../components/MyCreate'
 import AlbumDetail from '../components/AlbumDetail'
-
+import SearchResult from '../components/SearchResult'
 
 Vue.use(Router)
 export default new Router({
@@ -96,6 +96,11 @@ export default new Router({
       name:'album',
       path:'/album/:id',
       component:AlbumDetail
+    },
+    {
+      name:'searchResult',
+      path:'/search/:keywords',
+      component:SearchResult
     },
     {
       name:'error',

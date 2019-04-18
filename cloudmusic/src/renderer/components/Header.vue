@@ -6,8 +6,10 @@
       </div>
       <div class="searchContainer" style="-webkit-app-region: drag;">
           <span class="prev iconfont icon-zuo" @click="prev" :class="{'active':true}" style="-webkit-app-region: no-drag;"></span><span class="next iconfont icon-you" style="-webkit-app-region: no-drag;" :class="{'active':true}" @click="next" ></span>
-          <input type="text" placeholder="搜索音乐，视频，歌词，电台" style="-webkit-app-region: no-drag;">
-          <i class="iconfont icon-sousuo" style="-webkit-app-region: no-drag;"></i>
+          <input type="text" placeholder="搜索音乐，视频，歌词，电台" style="-webkit-app-region: no-drag;" maxlength="14"
+          @focus="inithotSearch"  v-model="keywords" @keyup="adviseSearch"  @keyup.enter="searchAll"
+          >
+          <i class="iconfont icon-sousuo" style="-webkit-app-region: no-drag;" @click="searchAll"></i>
       </div>
       <div class="headerNav alignCenter" style="-webkit-app-region: drag;">
           <i class="iconfont icon-geren" style="-webkit-app-region: no-drag;" v-show="!userName"></i>
@@ -50,7 +52,7 @@
                 <el-button type="primary" @click="logout">确 定</el-button>
             </span>
         </el-dialog>
-        <div class="modules" @click="drap = false" v-if="drap"></div>
+        <div class="modules" @click="drap = false,searchDrap = false,adviseDrap = false" v-if="drap || searchDrap || adviseDrap"></div>
         <transition name="fade">
             <div class="dropContainer" v-if="drap">
                 <drop-list>
@@ -78,7 +80,75 @@
                     </template>
                 </drop-list>
             </div>
-        </transition>  
+        </transition>
+        <transition name="fade">
+            <div class="dropContainer2 clearFix" v-if="searchDrap">
+                <drop-list :width="450">
+                    <template v-slot:header>
+                        <div class="hotSearch alignCenter">
+                            <i class="iconfont icon-sousuo"></i>
+                            <p class="hsTitle">热门搜索</p>
+                        </div>
+                        <div class="hotSearch alignCenter">
+                            <i class="iconfont icon-shijian"></i>
+                            <p class="hisTitle">搜索历史</p>
+                        </div>
+                    </template>
+                    <ul class="ItemContainer">
+                        <li class="ItemContent" v-for="item in hotSearchList" :key="item.first"
+                        @click="hotSearch(item.first)"
+                        >{{item.first}}</li>
+                    </ul>
+                    <ul class="ItemContainer">
+                        <p class="nothing" v-if="hisSearchList.length == 0">暂无搜索历史</p>
+                        <li class="ItemContent" v-for="(item,index) in hisSearchList" :key="item"
+                        @click="keywords = item,searchDrap = false,searchAll()"
+                        >{{item}} <i class="iconfont icon-code del" @click.stop="delHisSearchItem(index)"></i></li>
+                    </ul>
+                </drop-list>
+            </div> 
+        </transition>
+        <transition name = "fade">
+            <div class="dropContainer3" v-if="adviseDrap">
+                <drop-list :width="230">
+                    <template #header>
+                        <p class="searchTitle" @click="searchAll">搜“{{keywords}}”相关的结果></p>
+                    </template>
+                    <div class="adviseItem">
+                        <div class="ItemTitle"><i class="iconfont icon-yinle"></i>单曲</div>
+                        <ul class="adviseItemContainer">
+                            <li class="adviseItemContent" v-for="(item,index) in adviseSongList" :key="index" @click="playSong(item.mid,item.aid,index)">
+                                {{item.name}}&nbsp;-&nbsp;{{item.singer}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="adviseItem">
+                        <div class="ItemTitle"><i class="iconfont icon-geren"></i>歌手</div>
+                        <ul class="adviseItemContainer">
+                            <li class="adviseItemContent" v-for="(item,index) in adviseSearchList.artists" :key="index" @click="toSinger(item.id)">
+                                {{item.name}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="adviseItem">
+                        <div class="ItemTitle"><i class="iconfont icon-zhuanji"></i>专辑</div>
+                        <ul class="adviseItemContainer">
+                            <li class="adviseItemContent" v-for="(item,index) in adviseSearchList.albums" :key="index" @click="toAlbum(item.id)">
+                                {{item.name}}&nbsp;-&nbsp;{{item.artist.name}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="adviseItem">
+                        <div class="ItemTitle"><i class="iconfont icon-gedan"></i>歌单</div>
+                        <ul class="adviseItemContainer">
+                            <li class="adviseItemContent" v-for="(item,index) in adviseSearchList.playlists" :key="index" @click="toSongList(item.id)">
+                                {{item.name}}
+                            </li>
+                        </ul>
+                    </div>
+                </drop-list>
+            </div>
+        </transition>
   </div>
 </template>
 
@@ -86,8 +156,7 @@
 import axios from 'axios'
 import DropList from '../base/DropList'
 import {createSong} from '../common/song'
-
-import {mapMutations,mapGetters,mapState} from 'vuex'
+import {mapMutations,mapGetters,mapActions} from 'vuex'
 
 
 const {ipcRenderer} = require('electron')
@@ -95,14 +164,22 @@ const {ipcRenderer} = require('electron')
 export default {
     data() {
         return {
-            isLast:false,
-            isFirst:false,
+            isLast: false,
+            isFirst: false,
             dialogVisible: false,
             logoutVisible: false,
-            drap:false,
+            drap: false,
+            searchDrap: false,
+            adviseDrap: false,
+            iTime: '',
             id:'',
             username:'',
-            password:''
+            password:'',
+            keywords:'',
+            hotSearchList:[],
+            hisSearchList:[],
+            adviseSearchList:[],
+            adviseSongList:[]
         }
     },
     computed: {
@@ -121,7 +198,6 @@ export default {
     },
     created() {
         this.checkLogin()
-        
     },
     methods: {
         // 最小化窗口
@@ -333,18 +409,143 @@ export default {
                 }
             })
         },
+        // 初始化热搜列表
+        inithotSearch() {
+            if(this.keywords != '') {
+                this.adviseDrap = true
+                this.adviseSearch()
+            }else{
+                this.searchDrap = true
+                if(this.hotSearchList.length > 0) {
+                    return
+                }
+                axios.get('http://localhost:3000/search/hot').then((result) => {
+                let res = result.data
+                if(res.code === 200) {
+                    this.hotSearchList = res.result.hots
+                }
+                })
+                if(localStorage.getItem('hisSearchList')) {
+                    this.hisSearchList = JSON.parse(localStorage.getItem('hisSearchList'))
+                }
+            }
+        },
+        //  搜索热搜内容
+        hotSearch(keywords) {
+            this.keywords = keywords
+            this.searchDrap = false
+            if(this.hisSearchList.includes(keywords)) {
+                let index = this.hisSearchList.indexOf(keywords)
+                this.hisSearchList.splice(index,1)
+                this.hisSearchList.unshift(keywords)
+                localStorage.setItem('hisSearchList',JSON.stringify(this.hisSearchList))
+            }else {
+                this.hisSearchList.push(keywords)
+                localStorage.setItem('hisSearchList',JSON.stringify(this.hisSearchList))
+            }
+            this.searchAll()
+        },
+        //  删除搜索历史记录
+        delHisSearchItem(index) {
+            this.hisSearchList.splice(index,1)
+            localStorage.setItem('hisSearchList',JSON.stringify(this.hisSearchList))
+        },
+        //  显示建议搜索的内容
+        adviseSearch() {
+            clearTimeout(this.iTime);
+            this.iTime = setTimeout(() => {
+                if(this.keywords == "") {
+                    this.searchDrap = true
+                    this.adviseDrap = false
+                    return
+                }else{
+                    this.searchDrap = false
+                    this.adviseDrap = true
+                    axios.get('http://localhost:3000/search/suggest',{
+                        params:{
+                            keywords:this.keywords
+                        }
+                    }).then((result) => {
+                        let res = result.data
+                        if(res.code === 200) {
+                            this.adviseSearchList = res.result
+                            this.adviseSongList = this._normalizeSongList2(this.adviseSearchList.songs)
+                        }
+                    })
+                }
+            }, 200);
+        },
+        _normalizeSongList2(list) {
+            let ret = []
+            for(let i = 0; i < list.length; i ++) {
+                let id = list[i].artists[0].id
+                let mid = list[i].id
+                let aid = list[i].album.id
+                let singer = list[i].artists[0].name
+                let name = list[i].name
+                let album = list[i].album.name
+                let duration = list[i].duration
+                let picUrl = list[i].artists.img1v1Url
+                let alia = list[i].alias[0]
+                let url = ''
+                let pubTime = list[i].album.publishTime
+                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,pubTime,aid))
+            }
+            return ret
+        },
+        async playSong(mid,aid,index) {
+            await axios.get('http://localhost:3000/album',{
+                    params: {
+                        id: aid
+                    }
+            }).then((result) => {
+                let res = result.data
+                let picUrl = res.album.picUrl
+                this.adviseSongList[index].picUrl = picUrl
+            })
+            axios.get('http://localhost:3000/song/url',{
+                    params: {
+                        id: mid
+                    }
+            }).then((result) => {
+                let res = result.data
+                let url = res.data[0].url
+                this.adviseSongList[index].url = url
+                this.insertSong(this.adviseSongList[index])
+                this.adviseDrap = false
+            })
+        },
+        toSinger(id) {
+            this.$router.push(`/find/singer/${id}`)
+            this.adviseDrap = false
+        },
+        toSongList(id) {
+            this.$router.push(`/find/songlist/${id}`)
+            this.adviseDrap = false
+        },
+        toAlbum(id) {
+            this.$router.push(`/album/${id}`)
+            this.adviseDrap = false
+        },
+        searchAll() {
+            this.$router.push(`/search/${this.keywords}`)
+            this.adviseDrap = false
+            this.searchDrap = false
+        },
         ...mapMutations({
             setUserName: 'SET_USERNAME',
             setNickName: 'SET_NICKNAME',
             setUserId: 'SET_USERID',
             setAvatarUrl: 'SET_AVATARURL',
-            setPassword: 'SET_PASSWORD',
             set_collectSongList:'SET_COLLECTSONGLIST',
             set_collectSinger:'SET_COLLECTSINGER',
             set_collectSong:'SET_COLLECTSONG',
             setPlayHistoryList:'SET_PLAYHISTORYLIST',
-        })
-    }
+        }),
+        ...mapActions([
+            'insertSong'
+        ])
+    },
 }
 </script>
 
@@ -528,6 +729,7 @@ export default {
                 padding-left: 10px;
                 color: white;
                 box-sizing: border-box;
+                font-size: 13px;
                 &::placeholder {
                     font-size: 12px;
                     color: #C77373;
@@ -587,6 +789,125 @@ export default {
                 font-size: 12px;
                 color: rgba(255,255,255,.6);
                 padding-left: 8px;
+            }
+        }
+        .dropContainer2 {
+            width: 450px;
+            height: 330px;
+            position: absolute;
+            top: 50px;
+            left: 300px;
+            &::before {
+                content:'';
+                background: #FAFAFA;
+                height: 15px;
+                width: 15px;
+                position: absolute;
+                top: -7px;
+                left: 30px;
+                z-index: 201;
+                transform: rotate(135deg);
+            }
+            .hotSearch,.ItemContainer {
+                font-size: 13px;
+                width: 50%;
+                float: left;
+                box-sizing: border-box;
+                padding: 10px 10px;
+                color:#888888;
+                border-right: 1px solid #E1E1E2;
+                border-bottom: 1px solid #E1E1E2;
+                &:last-child {
+                    border-right: none;
+                }
+                .iconfont {
+                    font-size: 12px;
+                    margin-right: 5px;
+                }
+            }
+            .ItemContainer{
+                position: relative;
+                height: 296px;
+                padding: 0;
+                .ItemContent {
+                    position: relative;
+                    font-size: 13px;
+                    color:#333;
+                    line-height: 28px;
+                    padding-left: 25px;
+                    cursor: pointer;
+                    &:hover {
+                        background: #EBECED;
+                    }
+                    .del {
+                        position: absolute;
+                        right: 0;
+                        width: 25px;
+                        height: 25px;
+                        text-align: center;
+                    }
+                }
+                .nothing {
+                    font-size: 20px;
+                    margin: 100px 50px;
+                }
+            }
+        }
+        .dropContainer3 {
+            width: 230px;
+            height: 400px;
+            position: absolute;
+            top: 50px;
+            left: 300px;
+            &::before {
+                content:'';
+                background: #FAFAFA;
+                height: 15px;
+                width: 15px;
+                position: absolute;
+                top: -7px;
+                left: 30px;
+                z-index: 201;
+                transform: rotate(135deg);
+            }
+            .searchTitle {
+                cursor: pointer;
+                margin: 10px;
+                font-size: 13px;
+                color: #555;
+                &:hover {
+                    color: #333;
+                }
+            }
+            .adviseItem {
+                margin-bottom: 10px;
+                .ItemTitle {
+                    padding-left: 10px;
+                    margin-bottom: 10px;
+                    font-size: 13px;
+                    color:#333333;
+                    .iconfont {
+                        font-size: 13px;
+                        margin-right: 8px;
+                    }
+                }
+                .adviseItemContainer {
+                    font-size: 13px;
+                    
+                    .adviseItemContent {
+                        box-sizing: border-box;
+                        line-height: 28px;
+                        width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        padding-left: 28px;
+                        &:hover {
+                            cursor: pointer;
+                            background: #EBECED;
+                        }
+                    }
+                }
             }
         }
     }

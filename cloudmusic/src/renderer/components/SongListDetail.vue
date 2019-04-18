@@ -90,13 +90,13 @@
           </p>
           <comment :list="commentList" :songListId="parseInt(this.$route.params.id)" @deleteComment="deleteCom"></comment>
           <el-pagination
-            style="margin:20px 0 50px 50%;transform:translateX(-50%)"
-            background
-            :page-size = "20"
-            layout="prev, pager, next"
-            @current-change = "changePage"
-            :total="total">
-        </el-pagination>
+                style="margin:20px 0 50px 50%;transform:translateX(-50%)"
+                background
+                :page-size = "20"
+                layout="prev, pager, next"
+                @current-change = "changePage"
+                :total="total">
+            </el-pagination>
       </div>
       <div class="collecter"  v-if="cur == 2">
           <ImaList :list="collecterList" :listWidth="20">

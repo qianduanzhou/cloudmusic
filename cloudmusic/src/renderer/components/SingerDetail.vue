@@ -45,7 +45,7 @@
           <div class="album" v-for="item in album" :key="item.id">
             <album :Songs="item" :show="cur == 0" v-if="item.length != 0"  :types = "5" :width="70">
                 <template v-slot:pic>
-                    <div class="albumPic bgc"  :style="{backgroundImage: `url(${item[0].picUrl})`}"></div>
+                    <div class="albumPic bgc"  :style="{backgroundImage: `url(${item[0].picUrl})`}" @click="toAlbum(item)"></div>
                 </template>
                 <template v-slot:header>
                     <div class="Navheader">
@@ -174,6 +174,7 @@ export default {
             for(let i = 0; i < list.length; i ++) {
                 let id = list[i].ar[0].id
                 let mid = list[i].id
+                let aid = list[i].al.id
                 let singer = list[i].ar[0].name
                 let name = list[i].name
                 let album = list[i].al.name
@@ -182,7 +183,7 @@ export default {
                 let alia = list[i].alia[0]
                 let albumPublishTime = pushTime
                 let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,albumPublishTime))
+                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,albumPublishTime,aid))
             }
             return ret
         },
@@ -340,6 +341,10 @@ export default {
                 message:'取消收藏成功',
                 center: true
             });
+        },
+        toAlbum(album) {
+            let id = album[0].aid
+            this.$router.push(`/album/${id}`)
         },
         ...mapMutations({
            set_collectSinger:'SET_COLLECTSINGER'
