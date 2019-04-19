@@ -1,6 +1,6 @@
 <template>
 
-  <div class="singerDetail scrollStyle" ref="singerDetail" style="width: 100%;height: 100%;">
+  <div class="singerDetail scrollStyle" ref="singerDetail" style="width: 830px;height: 570px;">
       <header class="singeheader left">
           <div class="pic" :style ='{ backgroundImage: `url(${singerDetail.artist.img1v1Url})`}'></div>
           <div class="singInfo">
@@ -93,12 +93,14 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Album from '../base/Album'
 import ImgList from '../base/ImgList'
 import {createSong} from '../common/song'
 import { resolve } from 'url';
 import {mapMutations,mapGetters,mapState} from 'vuex'
+import {Axios,getSingerDetail,getSingerAlbum,
+getAlbumDetail,getSingerMv,getSingerDesc,
+getSameSinger,collectSinger} from '../common/api'
 
 export default {
     data() {
@@ -133,6 +135,7 @@ export default {
         ImgList
     },
     created() {
+        this.id = parseInt(this.$route.params.id)
         this.initSingerDetail()
         this.initAlbum()
         this.initMv()
@@ -145,7 +148,6 @@ export default {
     },
     methods: {
         init() {
-            console.log('singerId:',this.$route.params.id)
             setTimeout(() => {
                 this.$refs.singerDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
                 this.$refs.singerDetail.style.height = `${document.documentElement.clientHeight - 100}px`
@@ -156,77 +158,47 @@ export default {
             }, 500); 
         },
         initSingerDetail (){
-            axios.get('http://localhost:3000/artists',
-            {
-                params:{
-                    id:this.$route.params.id
-                }
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                id: this.id
+            }
+            Axios(getSingerDetail,params).then((res) => {
                 this.singerDetail = res
-                this._normalizeSongs(this.singerDetail.hotSongs).then((ret) => {
-                   this.hotSongs = ret
-                })
+                this.hotSongs = this._normalizeSongs(this.singerDetail.hotSongs)
             })
         },
-         async _normalizeSongs(list,pushTime) {
+         _normalizeSongs(list,pushTime) {
             let ret = []
             for(let i = 0; i < list.length; i ++) {
-                let id = list[i].ar[0].id
-                let mid = list[i].id
-                let aid = list[i].al.id
-                let singer = list[i].ar[0].name
-                let name = list[i].name
-                let album = list[i].al.name
-                let duration = list[i].dt
-                let picUrl = list[i].al.picUrl
-                let alia = list[i].alia[0]
-                let albumPublishTime = pushTime
-                let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,albumPublishTime,aid))
+                ret.push(createSong(list[i]))
             }
             return ret
         },
         initAlbum() {
-            axios.get('http://localhost:3000/artist/album',{
-                params:{
-                    id:this.$route.params.id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    for(let i = 0; i < res.hotAlbums.length; i ++) {
-                        this.initAlbumDetail(res.hotAlbums[i].id,res.hotAlbums[i].publishTime)
-                    }
+            let params = {
+                id: this.id
+            }
+            Axios(getSingerAlbum,params).then((res) => {
+                for(let i = 0; i < res.hotAlbums.length; i ++) {
+                    this.initAlbumDetail(res.hotAlbums[i].id,res.hotAlbums[i].publishTime)
                 }
             })
         },
-        async initAlbumDetail(id,pushTime) {
-            await axios.get('http://localhost:3000/album',{
-                params:{
-                    id:id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this._normalizeSongs(res.songs,pushTime).then((ret) => {
-                        this.album.push(ret)
-                    })
-                }
+        initAlbumDetail(id,pushTime) {
+            let params = {
+                id:id
+            }
+            Axios(getAlbumDetail,params).then((res) => {
+                this.album.push(this._normalizeSongs(res.songs,pushTime))
             })
         },
         initMv() {
             let id = this.$route.params.id
-            axios.get('http://localhost:3000/artist/mv',{
-                params:{
-                    id: id,
-                    limit:20
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.mvList = res.mvs
-                }
+            let params = {
+                id: this.id,
+                limit: 20
+            }
+            Axios(getSingerMv,params).then((res) => {
+                this.mvList = res.mvs
             })
         },
         moreMv() {
@@ -236,61 +208,47 @@ export default {
                     scrollTop = this.$refs.singerDetail.scrollTop,
                     scrollHeight = this.$refs.singerDetail.scrollHeight
                     if(clientHeight + scrollTop >= scrollHeight && this.cur == 1 && this.hasMoreMv) {
-                        let id = this.$route.params.id
                         this.offset += 20
-                        axios.get('http://localhost:3000/artist/mv',{
-                            params: {
-                                id: id,
-                                offset: this.offset
+                        let params = {
+                            id: this.id,
+                            offset: this.offset
+                        }
+                        Axios(getSingerMv,params).then((res) => {
+                            this.hasMoreMv = res.hasMore
+                            
+                            if(!this.hasMoreMv) {
+                                return this.loading = false
                             }
-                        }).then((result) => {
-                            let res = result.data
-                            if(res.code === 200) {
-                                this.hasMoreMv = res.hasMore
-                                
-                                if(!this.hasMoreMv) {
-                                    return this.loading = false
-                                }
-                                this.mvList = this.mvList.concat(res.mvs)
-                            }
+                            this.mvList = this.mvList.concat(res.mvs)
                         })
                     }
                 } 
             }, 500);           
         },
         initDesc() {
-            let id = this.$route.params.id
-            axios.get('http://localhost:3000/artist/desc',{
-                params:{
-                    id: id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    let introduction = res.introduction
-                    this.introduction = introduction.filter((item) => {
-                        item.txt = item.txt.split('\n')
-                        
-                        let item2 = item.txt.map((item) => {
-                             return `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${item}`
-                        })
-                        item.txt = item2
-                        return item
+            let params = {
+                id: this.id
+            }
+            Axios(getSingerDesc,params).then((res) => {
+                let introduction = res.introduction
+                this.introduction = introduction.filter((item) => {
+                    item.txt = item.txt.split('\n')
+                    
+                    let item2 = item.txt.map((item) => {
+                         return `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${item}`
                     })
-                }
+                    item.txt = item2
+                    return item
+                })
             })
         },
         initSameSinger() {
             let id = this.$route.params.id
-            axios.get('http://localhost:3000/simi/artist',{
-                params:{
-                    id: id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.sameSingerList = res.artists
-                }
+            let params = {
+                id: this.id
+            }
+            Axios(getSameSinger,params).then((res) => {
+                this.sameSingerList = res.artists
             })
         },
         toSinger(data) {
@@ -298,49 +256,43 @@ export default {
             this.$router.push(`/find/singer/${id}`)  
         },
         collect() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/artist/sub',{
-                params: {
-                    t: 1,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                t: 1,
+                id: this.id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(collectSinger,params).then((res) => {
                 let collectList = this.collectSinger.slice(0)
-                collectList.push(id)
+                collectList.push(this.id)
                 this.set_collectSinger(collectList)
                 this.collectNum += 1
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'收藏成功',
+                    center: true
+                });
+            })         
         },
         canCollect() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/artist/sub',{
-                params: {
-                    t: 2,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                t: 2,
+                id: this.id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(collectSinger,params).then((res) => {
                 let collectList = this.collectSinger.slice(0)
                 let index = collectList.findIndex((item) => {
-                    return item == id
+                    return item == this.id
                 })
                 collectList.splice(index,1)
                 this.set_collectSinger(collectList)
                 this.collectNum -= 1
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'取消收藏成功',
+                    center: true
+                });
+            }) 
         },
         toAlbum(album) {
             let id = album[0].aid
@@ -354,6 +306,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .singerDetail {
     position: fixed;
     background: #FAFAFA;
@@ -410,7 +363,7 @@ export default {
             cursor: pointer;
             text-align: center;
             line-height: 23px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             color:#666666;
             position: absolute;
             border-radius: 2px;
@@ -422,7 +375,7 @@ export default {
     }
     .singerNav {
         cursor: pointer;
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         display: flex;
         padding: 0 30px;
         .active {

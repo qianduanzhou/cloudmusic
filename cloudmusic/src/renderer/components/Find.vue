@@ -46,13 +46,14 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 @media screen and (min-width:670px){
 .find {
     position: relative;
     box-sizing: border-box;
     padding: 0 30px 0 30px;
     .navContainer {
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         li {
             a {
                 display: block;

@@ -1,13 +1,13 @@
 <template>
   <ul class="commitList">
-      <li class="listItem  alignCenter" v-for="item in list" :key="item.id" @contextmenu="showDelete(item)">
+      <li class="listItem  alignCenter" v-for="(item,index) in listc" :key="item.id" @contextmenu="showDelete(item)">
             <div class="avaPic" :style="{backgroundImage:`url(${item.user.avatarUrl})`}"></div>
              <div class="avaCommit">
                  <p class="avator">{{item.user.nickname}}:</p><b class="content">{{item.content}}</b>
                  <div class="timeContainer alignCenter">
                      <p class="time">{{item.time | bigTime}}</p>
                      <div class="likeContainer">
-                         <span class="like"><i class="iconfont icon-dianzan1"></i>({{item.likedCount}})</span>
+                         <span class="like" @click="likeComment(item.commentId,index)"><i class="iconfont icon-dianzan1" :class="{'likeActive':like.includes(item.commentId)}"></i>({{item.likedCount}})</span>
                          <span class="share">分享</span>
                          <span class="replay">回复</span>
                      </div>
@@ -21,11 +21,19 @@
 import {mapGetters} from 'vuex'
 import axios from 'axios'
 export default {
-    props: ['list','songListId'],
+    data() {
+        return {
+            like:[]
+        }
+    },
+    props: ['list','songListId','type'],
     computed: {
         ...mapGetters([
             'nickName'
         ])
+    },
+    created() {
+        this.listc = this.list.slice(0)
     },
     methods: {
         showDelete(item) {
@@ -54,7 +62,7 @@ export default {
             axios.get('http://localhost:3000/comment',{
                 params: {
                     t: 0,
-                    type: 2,
+                    type: this.type,
                     id: this.songListId,
                     commentId:item.commentId,
                     timestamp: (new Date()).getTime()
@@ -65,6 +73,24 @@ export default {
                     this.$emit('deleteComment',item.commentId)
                 }
             })
+        },
+        likeComment(commentId,index) {
+            if(this.like.includes(commentId)) {
+                let indexs = this.like.indexOf(commentId)
+                this.like.splice(indexs,1)
+                this.listc[index].likedCount -= 1
+                this.$message({
+                    type: 'success',
+                    message: `取消点赞成功`
+                });
+                return
+            }
+            this.like.push(commentId)
+            this.listc[index].likedCount += 1
+            this.$message({
+                type: 'success',
+                message: `点赞成功`
+            });
         }
     }
 }
@@ -130,6 +156,9 @@ export default {
                         &:hover {
                             color: #888888;
                         }
+                    }
+                    .likeActive{
+                        color:red;
                     }
                 }
             }

@@ -46,6 +46,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
   .list {
     width: 100%;
     .listContainer {
@@ -59,7 +60,7 @@ export default {
         img {
           cursor: pointer;
           width: 100%;
-          border: 1px solid #E1E1E2;
+          border: 1px solid $borderColor;
         }
         .icon-shipin1 {
           font-size: 11px;

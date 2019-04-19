@@ -95,9 +95,10 @@
 <script>
 import DropList from '../base/DropList'
 import ImgList from '../base/ImgList'
-import axios from 'axios'
+import {Axios,getSongListNav,getSongListHotNav,getSongList} from "../common/api"
 
 export default {
+    props:['root'],
     components: {
         DropList,
         ImgList
@@ -125,68 +126,43 @@ export default {
         this.initSongListNav()
         this.initSongList()
     },
-    beforeRouteUpdate (to,from,next) {
-    if(to.fullPath != "/find/songlist") {
-      this.songList = []
-    }else{
-      this.initSongList()
-    }
-		next()
-	},
     methods: {
         initSongListNav() {
-            axios.get('http://localhost:3000/playlist/catlist').then((result) => {
-                let res= result.data
-                if(res.code === 200) {
-                    res.sub.forEach((item) => {
-                        switch (item.category) {
-                            case 0:
-                                this.lanList = this.lanList.concat(item)
-                                break;
-                            case 1:
-                                this.styleList =  this.styleList.concat(item)
-                                break;
-                            case 2:
-                                this.placeList =  this.placeList.concat(item)
-                                break;
-                            case 3:
-                                this.feelList = this.feelList.concat(item)
-                                break;
-                            case 4:
-                                this.hostList = this.hostList.concat(item)
-                                break;
-                            default:
-                                break;
-                        }
-                    })
+            Axios(getSongListNav).then((res) => {
+                res.sub.forEach((item) => {
+                switch (item.category) {
+                    case 0:
+                        this.lanList = this.lanList.concat(item)
+                        break;
+                    case 1:
+                        this.styleList =  this.styleList.concat(item)
+                        break;
+                    case 2:
+                        this.placeList =  this.placeList.concat(item)
+                        break;
+                    case 3:
+                        this.feelList = this.feelList.concat(item)
+                        break;
+                    case 4:
+                        this.hostList = this.hostList.concat(item)
+                        break;
+                    default:
+                        break;
                 }
+                })
             })
-            axios.get('http://localhost:3000/playlist/hot').then((result) => {
-                let res= result.data
-                if(res.code === 200) {
-                    this.hotList = res.tags
-                }
+            Axios(getSongListHotNav).then((res) => {
+                this.hotList = res.tags
             })
         },
         initSongList() {
-            window.onscroll = () => {
-                if(this.$route.fullPath!="/find/songlist") {
-                        this.songList = []
-                        return 
-                    }
+            let params = {
+                cat:this.name,
+                limit:this.limit
             }
-            
-            axios.get('http://localhost:3000/top/playlist',{
-                params: {
-                    cat:this.name,
-                    limit:this.limit
-                }
-            }).then((result) => {
-                let res= result.data
-                if(res.code === 200) {
-                    this.songList = res.playlists
-                    this.total = res.total
-                }
+            Axios(getSongList,params).then((res) => {
+                this.songList = res.playlists
+                this.total = res.total
             })
         },
         select(item) {
@@ -197,18 +173,14 @@ export default {
         },
         changePage(index) {
             let offset = (index-1) * this.limit
-            axios.get('http://localhost:3000/top/playlist',{
-                params:{
-                    offset: offset,
-                    cat:this.name,
-                    limit:this.limit
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.songList = res.playlists
-                    document.documentElement.scrollTop = 0
-                }
+            let params = {
+                offset: offset,
+                cat:this.name,
+                limit:this.limit
+            }
+            Axios(getSongList,params).then((res) => {
+                this.songList = res.playlists
+                this.root.scrollTop = 0
             })
         },
         toSonglistDetail(data) {
@@ -225,6 +197,7 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+@import '../assets/css/base.scss';
 .songlist {
     .modules {
             position: fixed;
@@ -240,7 +213,7 @@ export default {
         margin-top: 20px;
         font-size: 13px;
         color: #333333;
-        border: 1px solid #E1E1E2;
+        border: 1px solid $borderColor;
     }
     .hotNav {
         margin-top: 10px;
@@ -280,7 +253,7 @@ export default {
             width: 100%;
             box-sizing: border-box;
             height: 50px;
-            border-bottom: 1px solid #E1E1E2;
+            border-bottom: 1px solid $borderColor;
             line-height: 50px;
             padding-left: 20px;
         }
@@ -292,7 +265,7 @@ export default {
             margin: 10px auto;
             text-align: center;
             line-height: 35px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             font-size: 13px;
             color: #555555;
             cursor: pointer;
@@ -344,19 +317,19 @@ export default {
                     width: 20%;
                     font-size: 13px;
                     color:#555555;
-                    border-left: 1px solid #E1E1E2;
-                    border-bottom: 1px solid #E1E1E2;
+                    border-left: 1px solid $borderColor;
+                    border-bottom: 1px solid $borderColor;
                     height: 35px;
                     text-align: center;
                     line-height: 35px;
                     &:last-child {
-                        border-right: 1px solid #E1E1E2;
+                        border-right: 1px solid $borderColor;
                     }
                     &:nth-of-type(5n) {
-                        border-right: 1px solid #E1E1E2;
+                        border-right: 1px solid $borderColor;
                     }
                     &:nth-of-type(1),&:nth-of-type(2),&:nth-of-type(3),&:nth-of-type(4),&:nth-of-type(5) {
-                        border-top: 1px solid #E1E1E2;
+                        border-top: 1px solid $borderColor;
                     }
                     .hot {
                         position: absolute;

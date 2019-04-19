@@ -52,6 +52,8 @@
 <script>
 import DropList from '../base/DropList'
 import axios from 'axios'
+import {Axios,getGSongList} from '../common/api'
+
 export default {
     data() {
         return {
@@ -89,12 +91,10 @@ export default {
             this.showDrop = false
         },
         initGSLDList() {
-            axios.get('http://localhost:3000/top/playlist/highquality',{
-                params: {
-                    cat: this.name
-                }
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                cat: this.name
+            }
+            Axios(getGSongList,params).then((res) => {
                 this.GSList = res.playlists
             })
         },
@@ -106,6 +106,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 @media screen and (min-width:670px){
 .gSListDetail {
     position: fixed;
@@ -117,7 +118,7 @@ export default {
     top: 100px;
     overflow-y: scroll;
     .gsdHeader {
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         padding-bottom: 10px;
         .gsdTitle {
             font-size: 20px;
@@ -217,7 +218,7 @@ export default {
             width: 100%;
             box-sizing: border-box;
             height: 50px;
-            border-bottom: 1px solid #E1E1E2;
+            border-bottom: 1px solid $borderColor;
             line-height: 50px;
             padding-left: 20px;
         }
@@ -229,7 +230,7 @@ export default {
             margin: 10px auto;
             text-align: center;
             line-height: 35px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             font-size: 13px;
             color: #555555;
             cursor: pointer;
@@ -254,19 +255,19 @@ export default {
                     width: 20%;
                     font-size: 13px;
                     color:#555555;
-                    border-left: 1px solid #E1E1E2;
-                    border-bottom: 1px solid #E1E1E2;
+                    border-left: 1px solid $borderColor;
+                    border-bottom: 1px solid $borderColor;
                     height: 35px;
                     text-align: center;
                     line-height: 35px;
                     &:last-child {
-                        border-right: 1px solid #E1E1E2;
+                        border-right: 1px solid $borderColor;
                     }
                     &:nth-of-type(5n) {
-                        border-right: 1px solid #E1E1E2;
+                        border-right: 1px solid $borderColor;
                     }
                     &:nth-of-type(1),&:nth-of-type(2),&:nth-of-type(3),&:nth-of-type(4),&:nth-of-type(5) {
-                        border-top: 1px solid #E1E1E2;
+                        border-top: 1px solid $borderColor;
                     }
                     .hot {
                         position: absolute;

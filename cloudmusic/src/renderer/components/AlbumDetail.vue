@@ -62,7 +62,7 @@
           <p class="comtitle" ref = 'comment'>
               最新评论
           </p>
-          <comment :list="commentList" :songListId="parseInt(this.$route.params.id)" @deleteComment="deleteCom"></comment>
+          <comment :list="commentList" :songListId="parseInt(this.$route.params.id)" @deleteComment="deleteCom" :key="commentList[0].user.userId"></comment>
           <el-pagination
             style="margin:20px 0 50px 50%;transform:translateX(-50%)"
             background
@@ -88,6 +88,7 @@
 import axios from 'axios'
 import {createSong} from '../common/song'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
+import {Axios,getAlbumDetail,getAlbumComment,getSongUrl,sendComment} from '../common/api'
 import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
@@ -122,10 +123,17 @@ export default {
         Comment,
         ImaList
     },
-    mounted() {
-        this.init()
+    created() {
+        this.id = parseInt(this.$route.params.id)
+        this.params = {
+            id: this.id
+        }
         this.initSongListDetail()
         this.initCommentList()
+    },
+    mounted() {
+        this.init()
+
     },
     computed: {
         ...mapGetters([
@@ -154,62 +162,33 @@ export default {
                 }
             }, 500); 
         },
-        async initSongListDetail() {
-            let id = this.$route.params.id
-            await axios.get('http://localhost:3000/album',{
-                params:{
-                    id: id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.detail = res.album
-                    let des = res.album.description
-                    des = des.split('\n')
-                    des.forEach((item,index) => {
-                        if(item == ' ') {
-                            des[index] = '&#8197;'
-                        }
-                    })
-                    this.description = des
-                    this._normalizeSongList(res.songs).then((ret) => {
-                        this.songList = ret
-                        this.songListc = ret
-                    })
-                    
-                }
-            })
-            
+        initSongListDetail() {
+            Axios(getAlbumDetail,this.params).then((res) => {
+                this.detail = res.album
+                let des = res.album.description
+                des = des.split('\n')
+                des.forEach((item,index) => {
+                    if(item == ' ') {
+                        des[index] = '&#8197;'
+                    }
+                })
+                this.description = des
+                this.songList = this._normalizeSongList(res.songs)
+                this.songListc = this._normalizeSongList(res.songs)    
+            })         
         },
         initCommentList() {
-            let id = this.$route.params.id
-            axios.get('http://localhost:3000/comment/album',{
-                params:{
-                    id: id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.commentList = res.comments
-                    this.total = res.total
-                }
+            Axios(getAlbumComment,this.params).then((res) => {
+                this.commentList = res.comments
+                this.total = res.total
             })
         },
 
 
-        async _normalizeSongList(list) {
+        _normalizeSongList(list) {
             let ret = []
             for(let i = 0; i < list.length; i ++) {
-                let id = list[i].ar[0].id
-                let mid = list[i].id
-                let singer = list[i].ar[0].name
-                let name = list[i].name
-                let album = list[i].al.name
-                let duration = list[i].dt
-                let picUrl = list[i].al.picUrl
-                let alia = list[i].alia[0]
-                let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+                ret.push(createSong(list[i]))
             }
             return ret
         },
@@ -217,19 +196,17 @@ export default {
             /*标记*/
             let url = ''
             let index = Math.ceil(Math.random() * (this.songList.length-1))
-            axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: this.songListc[index].mid
-                    }
-                }).then((result) => {
-                    let res = result.data
-                    url = res.data[0].url
-                    this.songListc[index].url = url
-                    this.selectPlay({
-                       list:this.songListc,
-                       index:index
-                    })
+            let params = {
+                id: this.songListc[index].mid
+            }
+            Axios(getSongUrl,params).then((res) => {
+                url = res.data[0].url
+                this.songListc[index].url = url
+                this.selectPlay({
+                   list:this.songListc,
+                   index:index
                 })
+            })
         },
         // collect() {
         //     let id = parseInt(this.$route.params.id)
@@ -287,41 +264,32 @@ export default {
 
         changePage(index) {
             let offset = (index-1) * this.limit
-            axios.get('http://localhost:3000/comment/playlist',{
-                params:{
-                    id: this.$route.params.id,
-                    offset: offset
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.commentList = res.comments
-                    this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
-                }
+            let params = {
+                id: this.id,
+                offset: offset
+            }
+            Axios(getAlbumComment,params).then((res) => {
+                console.log(res)
+                this.commentList = res.comments
+                this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
             })
         },
         sendComment() {
-            let id = parseInt(this.$route.params.id)
-            console.log(id)
-            axios.get('http://localhost:3000/comment',{
-                params: {
-                    t: 1,
-                    type: 3,
-                    id: id,
-                    content: this.commentContent,
-                    timestamp: (new Date()).getTime()
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.$message({
-                        type:'success',
-                        message: '发送成功',
-                        center: true
-                    });
-                    this.commentContent = ''
-                    this.commentList.unshift(res.comment)
-                }
+            let params = {
+                t: 1,
+                type: 3,
+                id: this.id,
+                content: this.commentContent,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(sendComment,params).then((res) => {
+                this.$message({
+                    type:'success',
+                    message: '发送成功',
+                    center: true
+                });
+                this.commentContent = ''
+                this.commentList.unshift(res.comment)
             }).catch((e) => {
                 this.$message({
                     type:'info',
@@ -347,6 +315,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .SongListDetail {
     position: fixed;
     z-index: 99;
@@ -386,7 +355,7 @@ export default {
                 .item {
                     font-size: 13px;
                     margin-right: 15px;
-                    border: 1px solid #E1E1E2;
+                    border: 1px solid $borderColor;
                     padding: 5px 10px;
                     border-radius: 4px;
                     color:#555555;
@@ -465,7 +434,7 @@ export default {
     .songListMain {
         .songListNav {
             margin-left: 30px;
-            border-bottom: 1px solid #E1E1E2;
+            border-bottom: 1px solid $borderColor;
             .Navitem {
                 position: relative;
                 padding: 10px 20px;
@@ -495,14 +464,14 @@ export default {
     }
     .table {
         width: 100%;
-        border-top: 1px solid #E1E1E2;
+        border-top: 1px solid $borderColor;
         box-sizing: border-box;
         .tableItem {
             box-sizing: border-box;
             padding: 10px 0 10px 10px;
             font-size: 12px;
             color: #666666;
-            border-left: 1px solid #E1E1E2;
+            border-left: 1px solid $borderColor;
         }
         .tControl {
             width: 90px;
@@ -526,7 +495,7 @@ export default {
             width: 93.5%;
             background: #FFFFFF;
             margin: 10px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             height: 50px;
             outline: none;
             &::placeholder {

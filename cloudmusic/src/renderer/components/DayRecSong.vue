@@ -31,10 +31,10 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Album from '../base/Album'
 import {createSong} from '../common/song'
 import {mapActions} from 'vuex'
+import {Axios,getDRSong,getSongUrl} from '../common/api'
 export default {
     data() {
         return {
@@ -60,28 +60,14 @@ export default {
             }, 500); 
         },
         initDRSong() {
-            axios.get('http://localhost:3000/recommend/songs').then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this._normalizeSongList(res.recommend).then((ret) => {
-                        this.drSongList = ret
-                    })
-                }
+            Axios(getDRSong).then((res) => {
+                this.drSongList = this._normalizeSongList(res.recommend)
             })
         },
-        async _normalizeSongList(list) {
+        _normalizeSongList(list) {
             let ret = []
             for(let i = 0; i < list.length; i ++) {
-                let id = list[i].artists[0].id
-                let mid = list[i].id
-                let singer = list[i].artists[0].name
-                let name = list[i].name
-                let album = list[i].album.name
-                let duration = list[i].duration
-                let picUrl = list[i].album.picUrl
-                let alia = list[i].alias[0]
-                let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+                ret.push(createSong(list[i]))
             }
             return ret
         },
@@ -89,18 +75,16 @@ export default {
             /*标记*/
             let url = ''
             let index = Math.ceil(Math.random() * (this.drSongList.length-1))
-            axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: this.drSongList[index].mid
-                    }
-                }).then((result) => {
-                    let res = result.data
-                    url = res.data[0].url
-                    this.drSongList[index].url = url
-                    this.selectPlay({
-                       list:this.drSongList,
-                       index:index
-                    })
+            let params = {
+                id: this.drSongList[index].mid
+            }
+            Axios(getSongUrl,params).then((res) => {
+                url = res.data[0].url
+                this.drSongList[index].url = url
+                this.selectPlay({
+                   list:this.drSongList,
+                   index:index
+                })
             })
         },
         ...mapActions([
@@ -111,6 +95,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .dayRecSong {
     position: fixed;
     top: 50px;
@@ -121,11 +106,11 @@ export default {
     .drsHeader {
         width: 100%;
         height: 150px;
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         .drsPic {
             width: 100px;
             height: 100px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             margin: 20px 22px 0 22px;
         }
         .drsTitleContainer {
@@ -167,7 +152,7 @@ export default {
             font-size: 13px;
             margin-right: 15px;
             width: 120px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             padding: 5px 10px;
             border-radius: 4px;
             color:#555555;
@@ -192,7 +177,7 @@ export default {
             }
         }
         .bCollection {
-          border: 1px solid #E1E1E2;
+          border: 1px solid $borderColor;
           border-radius: 3px;
           padding: 0 5px;
           font-size: 13px;

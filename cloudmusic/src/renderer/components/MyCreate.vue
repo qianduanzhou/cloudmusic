@@ -93,10 +93,11 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .mcNav {
   width: 220px;
   margin: 20px auto;
-  border: 1px solid #E1E1E2;
+  border: 1px solid $borderColor;
   border-radius: 3px;
   .mcItem {
     cursor: pointer;
@@ -121,7 +122,7 @@ export default {
   font-size: 20px;
   padding-left: 30px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #E1E1E2;
+  border-bottom: 1px solid $borderColor;
   span {
     font-size: 12px;
   }

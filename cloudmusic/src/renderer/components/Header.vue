@@ -157,7 +157,9 @@ import axios from 'axios'
 import DropList from '../base/DropList'
 import {createSong} from '../common/song'
 import {mapMutations,mapGetters,mapActions} from 'vuex'
-
+import {Axios,cellLogin,getUserSongList,getUserCollectSinger,getUserLikeMusic,
+getUserPlayHistory,Logout,getHotSearch,adviseSearch,getAlbumDetail,getSongUrl,
+} from '../common/api'
 
 const {ipcRenderer} = require('electron')
 
@@ -173,6 +175,7 @@ export default {
             adviseDrap: false,
             iTime: '',
             id:'',
+            params:'',
             username:'',
             password:'',
             keywords:'',
@@ -233,155 +236,134 @@ export default {
             this.$router.push('/find')
         },
         // 检查登录状态
-        async checkLogin() {
+        checkLogin() {
             if(!localStorage.getItem("username")) {
                 return
             }
-            await axios.get('http://localhost:3000/login/cellphone',{
-                params: {
-                    phone: localStorage.getItem("username"),
-                    password: localStorage.getItem("password"),
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.id = res.account.id
-                    this.setUserName(localStorage.getItem("username"))
-                    this.setUserId(res.profile.userId)
-                    this.setNickName(res.profile.nickname);
-                    this.setAvatarUrl(res.profile.avatarUrl);
+            let params = {
+                phone: localStorage.getItem("username"),
+                password: localStorage.getItem("password"),
+                timestamp: (new Date()).getTime()
+            }
 
-                    this.username = '';
-                    this.password = '';
-                }    
-            }).catch(()=>{
-                alert('手机号或者密码错误')
+            Axios(cellLogin,params).then((res) => {
+                this.id = res.account.id
+                this.params = {
+                    uid : this.id
+                }
+                this.setUserName(localStorage.getItem("username"))
+                this.setUserId(res.profile.userId)
+                this.setNickName(res.profile.nickname);
+                this.setAvatarUrl(res.profile.avatarUrl);
+                this.username = '';
+                this.password = '';
+                this.initCollectSongList()
+                this.initCollectSingerList()
+                this.initLikeMusic()
+                this.initHistory()
             })
-            this.initCollectSongList()
-            this.initCollectSingerList()
-            this.initLikeMusic()
-            this.initHistory()
         },
 
 
         // 登录
-        async login() {
-            await axios.get('http://localhost:3000/login/cellphone',{
-                params: {
-                    phone: this.username,
-                    password: this.password,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.id = res.account.id
-                    this.setUserName(this.username)
-                    this.setNickName(res.profile.nickname)
-                    this.setUserId(res.profile.userId)
-                    this.setAvatarUrl(res.profile.avatarUrl)
+        login() {
+            let params = {
+                phone: this.username,
+                password: this.password,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(cellLogin,params).then((res) => {
+                this.id = res.account.id
+                this.params = {
+                    uid : this.id
+                }
+                this.setUserName(this.username)
+                this.setNickName(res.profile.nickname)
+                this.setUserId(res.profile.userId)
+                this.setAvatarUrl(res.profile.avatarUrl)
 
+                localStorage.setItem("username", this.username)
+                localStorage.setItem("nickName", this.nickName)
+                localStorage.setItem("avatarUrl", this.avatarUrl)
+                localStorage.setItem("password", this.password)
+                localStorage.setItem("userId", res.profile.userId)
 
-                    localStorage.setItem("username", this.username)
-                    localStorage.setItem("nickName", this.nickName)
-                    localStorage.setItem("avatarUrl", this.avatarUrl)
-                    localStorage.setItem("password", this.password)
-                    localStorage.setItem("userId", res.profile.userId)
-                    this.username = ''
-                    this.password = ''
-                }    
+                this.username = ''
+                this.password = ''
+
+                this.initCollectSongList()
+                this.initCollectSingerList()
+                this.initLikeMusic()
+                this.initHistory()
             }).catch(()=>{
                 alert('手机号或者密码错误')
                 this.username = ''
                 this.password = ''
             })
-
-            this.initCollectSongList()
-            this.initCollectSingerList()
-            this.initLikeMusic()
-            this.initHistory()
-
             this.dialogVisible = false
         },
-
+        // 退出登录
+        logout() {
+            Axios(Logout).then((result) => {
+                this.setUserName('')
+                this.setNickName('')
+                this.setAvatarUrl('')
+                localStorage.setItem("username", '');
+                localStorage.setItem("nickName", '');
+                localStorage.setItem("avatarUrl", '');
+                localStorage.setItem("password", '');
+                localStorage.setItem("userId", '');
+                this.drap = false;
+                this.logoutVisible = false
+                this.$router.push('/find/recommend')
+            })
+        },
         //  初始化用户歌单列表
         initCollectSongList() {
-            axios.get('http://localhost:3000/user/playlist',{
-                params: {
-                    uid: this.id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    let ret = []
-                    res.playlist.forEach((item) => {
-                        ret.push(item.id)
-                    })
-                    this.set_collectSongList(ret)
-                }
+            Axios(getUserSongList,this.params).then((res) => {
+                let ret = []
+                res.playlist.forEach((item) => {
+                    ret.push(item.id)
+                })
+                this.set_collectSongList(ret)
             })
         },
 
         // 初始化用户收藏歌手列表
         initCollectSingerList() {
-            axios.get('http://localhost:3000/artist/sublist',{
-                params: {
-                    uid: this.id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    let ret = []
-                    res.data.forEach((item) => {
-                        ret.push(item.id)
-                    })
-                    this.set_collectSinger(ret)
-                }
+            Axios(getUserCollectSinger,this.params).then((res) => {
+                let ret = []
+                res.data.forEach((item) => {
+                    ret.push(item.id)
+                })
+                this.set_collectSinger(ret)
             })
         },
         // 初始化喜欢音乐
         initLikeMusic() {
-            axios.get('http://localhost:3000/likelist',{
-                params: {
-                    uid: this.id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.set_collectSong(res.ids)
-                }
+            Axios(getUserLikeMusic,this.params).then((res) => {
+                this.set_collectSong(res.ids)
             })
         },
 
         // 初始化播放历史
         initHistory() {
-            axios.get('http://localhost:3000/user/record',{
-                params: {
-                    uid:this.id,
-                    type:1
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    
-                    this._normalizeSongs(res.weekData)
-                }
+            let params = {
+                uid:this.id,
+                type:1
+            }
+            Axios(getUserPlayHistory,params).then((res) => {
+                let list = []
+                res.weekData.forEach((item) => {
+                    list.push(item.song)
+                })
+                this._normalizeSongs(list)
             })
         },
         _normalizeSongs(list) {
             let ret = []
             for(let i = 0; i < list.length; i ++) {
-                let id = list[i].song.ar[0].id
-                let mid = list[i].song.id
-                let singer = list[i].song.ar[0].name
-                let name = list[i].song.name
-                let album = list[i].song.al.name
-                let duration = list[i].song.dt
-                let picUrl = list[i].song.al.picUrl
-                let alia = list[i].song.alia[0]
-                let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+                ret.push(createSong(list[i]))
             }
             this.setPlayHistoryList(ret)
             return ret
@@ -390,25 +372,7 @@ export default {
         showDrap() {
             this.drap = !this.drap;
         },
-        // 退出登录
-        logout() {
-            axios.get('http://localhost:3000/logout').then((result) => {
-                var res = result.data
-                if(res.code == 200) {
-                    this.setUserName('')
-                    this.setNickName('')
-                    this.setAvatarUrl('')
-                    localStorage.setItem("username", '');
-                    localStorage.setItem("nickName", '');
-                    localStorage.setItem("avatarUrl", '');
-                    localStorage.setItem("password", '');
-                    localStorage.setItem("userId", '');
-                    this.drap = false;
-                    this.logoutVisible = false
-                    this.$router.push('/find/recommend')
-                }
-            })
-        },
+        
         // 初始化热搜列表
         inithotSearch() {
             if(this.keywords != '') {
@@ -419,11 +383,8 @@ export default {
                 if(this.hotSearchList.length > 0) {
                     return
                 }
-                axios.get('http://localhost:3000/search/hot').then((result) => {
-                let res = result.data
-                if(res.code === 200) {
+                Axios(getHotSearch).then((res) => {
                     this.hotSearchList = res.result.hots
-                }
                 })
                 if(localStorage.getItem('hisSearchList')) {
                     this.hisSearchList = JSON.parse(localStorage.getItem('hisSearchList'))
@@ -461,58 +422,31 @@ export default {
                 }else{
                     this.searchDrap = false
                     this.adviseDrap = true
-                    axios.get('http://localhost:3000/search/suggest',{
-                        params:{
-                            keywords:this.keywords
-                        }
-                    }).then((result) => {
-                        let res = result.data
-                        if(res.code === 200) {
-                            this.adviseSearchList = res.result
-                            this.adviseSongList = this._normalizeSongList2(this.adviseSearchList.songs)
-                        }
+                    let params = {
+                        keywords: this.keywords
+                    }
+                    Axios(adviseSearch,params).then((res) => {
+                        this.adviseSearchList = res.result
+                        this.adviseSongList = this._normalizeSongs(this.adviseSearchList.songs)
                     })
                 }
             }, 200);
         },
-        _normalizeSongList2(list) {
-            let ret = []
-            for(let i = 0; i < list.length; i ++) {
-                let id = list[i].artists[0].id
-                let mid = list[i].id
-                let aid = list[i].album.id
-                let singer = list[i].artists[0].name
-                let name = list[i].name
-                let album = list[i].album.name
-                let duration = list[i].duration
-                let picUrl = list[i].artists.img1v1Url
-                let alia = list[i].alias[0]
-                let url = ''
-                let pubTime = list[i].album.publishTime
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,pubTime,aid))
-            }
-            return ret
-        },
-        async playSong(mid,aid,index) {
-            await axios.get('http://localhost:3000/album',{
-                    params: {
-                        id: aid
-                    }
-            }).then((result) => {
-                let res = result.data
+        playSong(mid,aid,index) {
+
+            Axios(getAlbumDetail,{
+                id: aid
+            }).then((res) => {
                 let picUrl = res.album.picUrl
                 this.adviseSongList[index].picUrl = picUrl
             })
-            axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: mid
-                    }
-            }).then((result) => {
-                let res = result.data
+            Axios(getSongUrl,{
+                id: mid
+            }).then((res) => {
                 let url = res.data[0].url
                 this.adviseSongList[index].url = url
                 this.insertSong(this.adviseSongList[index])
-                this.adviseDrap = false
+                this.adviseDrap = false 
             })
         },
         toSinger(id) {
@@ -550,6 +484,7 @@ export default {
 </script>
 
 <style lang="scss">
+@import '../assets/css/base.scss';
     .username, .password{
         height: 30px;
         margin-bottom: 10px;
@@ -609,7 +544,7 @@ export default {
                 top: 30px;
                 right: 10px;
                 height: 25px;
-                border: 1px solid #E1E1E2;
+                border: 1px solid $borderColor;
                 border-radius: 5px;
                 font-size: 12px;
                 line-height: 25px;
@@ -618,7 +553,7 @@ export default {
             .message {
                 width: 100%;
                 height: 70px;
-                border-bottom: 1px solid #E1E1E2;
+                border-bottom: 1px solid $borderColor;
                 li {
                     width:33.3333%;
                     b,p {
@@ -666,7 +601,7 @@ export default {
                 }
             }
             .logout {
-                border-top: 1px solid #E1E1E2;
+                border-top: 1px solid $borderColor;
                 padding: 15px 30px;
                 box-sizing: border-box;
                 font-size: 13px;
@@ -815,8 +750,8 @@ export default {
                 box-sizing: border-box;
                 padding: 10px 10px;
                 color:#888888;
-                border-right: 1px solid #E1E1E2;
-                border-bottom: 1px solid #E1E1E2;
+                border-right: 1px solid $borderColor;
+                border-bottom: 1px solid $borderColor;
                 &:last-child {
                     border-right: none;
                 }

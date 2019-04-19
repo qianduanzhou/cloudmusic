@@ -16,7 +16,8 @@
         </div>
         <album :Songs="songList" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songList[0].id">
         </album>
-        <el-pagination
+        <p v-if="!songList" style="color:#666666;font-size:30px;margin:50px auto;width:100%;text-align:center;">没有找到关于"<b style="color:#0C73C2;">{{keywords}}"</b>的结果</p>
+        <el-pagination v-if="songList"
           style="margin:20px 0 50px 50%;transform:translateX(-50%)"
           background
           :page-size = "100"
@@ -32,7 +33,8 @@
             <p class="srsinger">{{item.name}}</p>
           </li>
         </ul>
-        <el-pagination
+        <p v-if="!singerList" style="color:#666666;font-size:30px;margin:50px auto;width:100%;text-align:center;">没有找到关于"<b style="color:#0C73C2;">{{keywords}}"</b>的结果</p>
+        <el-pagination v-if="singerList"
           style="margin:20px 0 50px 50%;transform:translateX(-50%)"
           background
           :page-size = "100"
@@ -49,7 +51,8 @@
             <p class="mcAlbumSinger">{{item.artists[0].name}}</p>
             <span>{{item.size}}首</span>
           </div>
-          <el-pagination
+          <p v-if="!albumList" style="color:#666666;font-size:30px;margin:50px auto;width:100%;text-align:center;">没有找到关于"<b style="color:#0C73C2;">{{keywords}}"</b>的结果</p>
+          <el-pagination v-if="albumList"
             style="margin:20px 0 50px 50%;transform:translateX(-50%)"
             background
             :page-size = "100"
@@ -67,7 +70,8 @@
             <p class="mcAlbumSinger">by&nbsp;&nbsp;{{item.creator.nickname}}</p>
             <span>{{item.trackCount}}首</span>
           </div>
-          <el-pagination
+          <p v-if="!playList" style="color:#666666;font-size:30px;margin:50px auto;width:100%;text-align:center;">没有找到关于"<b style="color:#0C73C2;">{{keywords}}"</b>的结果</p>
+          <el-pagination v-if="playList"
             style="margin:20px 0 50px 50%;transform:translateX(-50%)"
             background
             :page-size = "100"
@@ -81,9 +85,10 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Album from '../base/Album'
 import {createSong} from '../common/song'
+import {Axios,getSearchContent} from '../common/api'
+
 
 export default {
   props:['root'],
@@ -118,133 +123,94 @@ export default {
   },
   methods: {
     initSong() {
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          limit:100
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
-          this.songList = this._normalizeSongList2(res.result.songs)
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        limit:100
+      }).then((res) => {
+          this.songList = this._normalizeSongList(res.result.songs)
           this.songCount = res.result.songCount
-        }
       })
     },
     initSinger() {
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          limit:100,
-          type:100
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        limit:100,
+        type:100
+      }).then((res) => {
           this.singerList = res.result.artists
           this.artistCount = res.result.artistCount
-        }
       })
     },
     initAlbum() {
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          limit:100,
-          type:10
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        limit:100,
+        type:10
+      }).then((res) => {
           this.albumList = res.result.albums
           this.albumCount = res.result.albumCount
-        }
       })
     },
     initPlayList() {
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          limit:100,
-          type:1000
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        limit:100,
+        type:1000
+      }).then((res) => {
           this.playList = res.result.playlists
           this.playlistCount = res.result.playlistCount
-        }
       })
     },
     changePage(index) {
       let offset = (index-1) * 100
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          offset:offset,
-          limit:100
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
-          this.songList = this._normalizeSongList2(res.result.songs)
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        offset:offset,
+        limit:100
+      }).then((res) => {
+          this.songList = this._normalizeSongList(res.result.songs)
           this.songCount = res.result.songCount
           this.root.scrollTop = this.$refs.songs.offsetTop -50
-        }
       })
     },
     changePage2(index) {
       let offset = (index-1) * 100
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          offset:offset,
-          limit:100,
-          type:100
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        offset:offset,
+        limit:100,
+        type:100
+      }).then((res) => {
           this.singerList = res.result.artists
           this.artistCount = res.result.artistCount
           this.root.scrollTop = this.$refs.singers.offsetTop -50
-        }
       })
+      
     },
     changePage3(index) {
       let offset = (index-1) * 100
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          offset:offset,
-          limit:100,
-          type:10
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        offset:offset,
+        limit:100,
+        type:10
+      }).then((res) => {
           this.albumList = res.result.albums
           this.albumCount = res.result.albumCount
           this.root.scrollTop = this.$refs.albums.offsetTop -50
-        }
       })
     },
     changePage4(index) {
       let offset = (index-1) * 100
-      axios.get('http://localhost:3000/search',{
-        params:{
-          keywords:this.keywords,
-          offset:offset,
-          limit:100,
-          type:1000
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      Axios(getSearchContent,{
+        keywords:this.keywords,
+        offset:offset,
+        limit:100,
+        type:1000
+      }).then((res) => {
           this.playList = res.result.playlists
           this.playlistCount = res.result.playlistCount
           this.root.scrollTop = this.$refs.playList.offsetTop -50
-        }
       })
     },
     toSinger(id) {
@@ -256,21 +222,10 @@ export default {
     toSongList(id) {
       this.$router.push(`/find/songlist/${id}`)
     },
-    _normalizeSongList2(list) {
+    _normalizeSongList(list) {
       let ret = []
       for(let i = 0; i < list.length; i ++) {
-        let id = list[i].artists[0].id
-        let mid = list[i].id
-        let aid = list[i].album.id
-        let singer = list[i].artists[0].name
-        let name = list[i].name
-        let album = list[i].album.name
-        let duration = list[i].duration
-        let picUrl = list[i].artists.img1v1Url
-        let alia = list[i].alias[0]
-        let url = ''
-        let pubTime = list[i].album.publishTime
-        ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia,pubTime,aid))
+        ret.push(createSong(list[i]))
       }
           return ret
     },
@@ -279,6 +234,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .searchResult {
   overflow-x: hidden;
   .srTitle {
@@ -291,7 +247,7 @@ export default {
   }
   .srNav {
     padding-left: 30px;
-    border-bottom: 1px solid #E1E1E2;
+    border-bottom: 1px solid $borderColor;
     .Navitem {
         position: relative;
         padding: 10px 50px;
@@ -320,14 +276,14 @@ export default {
   }
   .table {
     width: 100%;
-    border-top: 1px solid #E1E1E2;
+    border-top: 1px solid $borderColor;
     box-sizing: border-box;
     .tableItem {
         box-sizing: border-box;
         padding: 10px 0 10px 10px;
         font-size: 12px;
         color: #666666;
-        border-left: 1px solid #E1E1E2;
+        border-left: 1px solid $borderColor;
     }
     .tControl {
         width: 90px;

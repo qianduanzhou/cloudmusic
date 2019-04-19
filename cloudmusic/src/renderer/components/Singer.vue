@@ -37,10 +37,7 @@
 
 <script>
 import ImgList from '../base/ImgList'
-import axios from 'axios'
-
-
-
+import {Axios,getSinger} from '../common/api'
 
 export default {
   props:['root'],
@@ -107,14 +104,6 @@ export default {
     this.initSinger()
     this.moreSinger()
   },
-  beforeRouteUpdate (to,from,next) {
-    if(to.fullPath != "/find/singer") {
-      this.singList = []
-    }else{
-      this.initSinger()
-    }
-		next()
-	},
   methods: {
     initSinger() {
       let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
@@ -122,22 +111,18 @@ export default {
       if(this.filterList[this.filtercur] != '热门') {
         initial = this.filterList[this.filtercur]
       }
-      axios.get('http://localhost:3000/artist/list',{
-        params:{
-          cat: cat,
-          initial: initial,
-          offset: this.offset,
-          limit: this.limit
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code == 200) {
+      let params = {
+        cat: cat,
+        initial: initial,
+        offset: this.offset,
+        limit: this.limit
+      }
+      Axios(getSinger,params).then((res) => {
           this.singList = res.artists
           this.singList.forEach((item) => {
-                        item.picUrl = item.img1v1Url
-                    })
+            item.picUrl = item.img1v1Url
+          })
           this.loading = false
-        }
       })
     },
     //  加载更多
@@ -145,10 +130,6 @@ export default {
       
       setTimeout(() => {
         this.root.onscroll = () => {
-          if(this.$route.fullPath != '/find/singer') {
-            this.singList = []
-            return 
-          }
           let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
           let initial = ''
           if(this.filterList[this.filtercur] != '热门') {
@@ -163,22 +144,18 @@ export default {
             
             this.loading = true
             this.offset = this.offset + this.limit ;
-            axios.get('http://localhost:3000/artist/list',{
-              params:{
-                cat: cat,
-                initial: initial,
-                offset: this.offset,
-                limit: this.limit
-              }
-            }).then((result) => {
-              let res = result.data
-              if(res.code == 200) {
-                this.singList = this.singList.concat(res.artists)
-                this.singList.forEach((item) => {
-                              item.picUrl = item.img1v1Url
-                          })
-                this.loading = false
-              }
+            let params = {
+              cat: cat,
+              initial: initial,
+              offset: this.offset,
+              limit: this.limit
+            }
+            Axios(getSinger,params).then((res) => {
+              this.singList = this.singList.concat(res.artists)
+              this.singList.forEach((item) => {
+                item.picUrl = item.img1v1Url
+              })
+              this.loading = false
             })
           }
         }
@@ -197,12 +174,13 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .singer {
   font-size: 13px;
 
   .SingerNavContainer {
     padding: 10px 0;
-    border-bottom: 1px solid #E1E1E2;
+    border-bottom: 1px solid $borderColor;
     .SingerNav {
       flex-wrap: wrap;
       .title {

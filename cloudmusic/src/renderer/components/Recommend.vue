@@ -62,15 +62,13 @@
 </template>
 
 <script>
-import axios from 'axios'
 import {shuffle} from '../common/utils'
-
-
 import Swiper from '../base/Swiper'
 import ImgList from '../base/ImgList'
 import MusicList from '../base/MusicList'
 import {createSong} from '../common/song'
 import {mapActions} from 'vuex'
+import {Axios,getBanner,getPersonalized,getPrivatecontent,getRecMv,getNewSong} from '../common/api'
 
 export default {
 
@@ -94,44 +92,31 @@ export default {
     },
     methods: {
         initList() {
-            axios.get('http://localhost:3000/banner').then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.bannerList = res.banners
-                }
+            Axios(getBanner).then((res) => {
+                this.bannerList = res.banners
             })
 
+            Axios(getPersonalized).then((res) => {
+                this.recList = shuffle(res.result).slice(0,9)
+                this.loading = false
+            })
 
-            axios.get('http://localhost:3000/personalized').then((result) => {
-                var res = result.data
-                if(res.code == 200) {
-                    this.recList = shuffle(res.result).slice(0,9)
-                    this.loading = false
-                }
+            Axios(getPrivatecontent).then((res) => {
+                this.specialList = shuffle(res.result)
+                this.specialList.forEach((item) => {
+                    item.picUrl = item.sPicUrl
+                })
+                this.loading = false
             })
-            axios.get('http://localhost:3000/personalized/privatecontent').then((result) => {
-                var res = result.data
-                if(res.code == 200) {
-                    this.specialList = shuffle(res.result)
-                    this.specialList.forEach((item) => {
-                        item.picUrl = item.sPicUrl
-                    })
-                    this.loading = false
-                }
+
+            Axios(getRecMv).then((res) => {
+                this.mvList = shuffle(res.result).slice(0,3)
+                this.loading = false
             })
-            axios.get('http://localhost:3000/personalized/mv').then((result) => {
-                var res = result.data
-                if(res.code == 200) {
-                    this.mvList = shuffle(res.result).slice(0,3)
-                    this.loading = false
-                }
-            })
-            axios.get('http://localhost:3000/personalized/newsong').then((result) => {
-                var res = result.data
-                if(res.code == 200) {
-                    this.musicList = res.result
-                    this.loading = false
-                }
+
+            Axios(getNewSong).then((res) => {
+                this.musicList = res.result
+                this.loading = false
             })
         },
         toSongListDetail(data) {
@@ -177,6 +162,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .recommend {
     width: 100%;
     .head {
@@ -184,7 +170,7 @@ export default {
         padding: 20px 0 10px 0;
         display: flex;
         justify-content: space-between;
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         .title {
             font-size: 20px;
             color: #333;
@@ -205,7 +191,7 @@ export default {
     }
     .edit {
         margin-bottom: 80px;
-        border-top: 1px solid #E1E1E2;
+        border-top: 1px solid $borderColor;
         display: flex;
         justify-content: center;
         flex-wrap: wrap;

@@ -196,6 +196,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
     .album {
         font-size: 12px;
         display: flex;
@@ -228,7 +229,7 @@ export default {
                 }
             }
             .songs {
-                border: 1px solid #E1E1E2;
+                border: 1px solid $borderColor;
                 width: 100%;
                 .songActive{
                     background: #EBECED;
@@ -266,6 +267,7 @@ export default {
                     .nameContainer {
                         width: 100%;
                         .songName {
+                            cursor: pointer;
                             width: 100%;
                             color:#333; 
                             overflow: hidden;

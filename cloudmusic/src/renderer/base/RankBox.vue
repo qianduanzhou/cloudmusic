@@ -30,6 +30,7 @@
 
 <script>
 import axios from 'axios'
+import {Axios,getSongUrl,url} from '../common/api'
 import {createSong} from '../common/song'
 import {mapActions} from 'vuex'
 export default {
@@ -48,7 +49,7 @@ export default {
       this.rankList1 = this.list.slice(0)
       this.rankList2 = this.specailList.slice(0)
       var promiseAll = this.rankList1.map((item)=>{
-        return axios.get('http://localhost:3000/top/list',{
+        return axios.get(`${url}/top/list`,{
           params:{
             idx:item.idx,
             timestamp: (new Date()).getTime()
@@ -63,7 +64,7 @@ export default {
         }
       })
       for(let i = 0; i < this.rankList2.length; i ++) {
-        axios.get('http://localhost:3000/toplist/artist',{
+        axios.get(`${url}/toplist/artist`,{
           params:{
             timestamp: (new Date()).getTime()
           }
@@ -78,31 +79,20 @@ export default {
     _normalizeSongList(list) {
         let ret = []
         for(let i = 0; i < list.length; i ++) {    
-            let id = list[i].ar[0].id
-            let mid = list[i].id
-            let singer = list[i].ar[0].name
-            let name = list[i].name
-            let album = list[i].al.name
-            let duration = list[i].dt
-            let picUrl = list[i].al.picUrl
-            let alia = list[i].alia[0]
-            let url = ''
-            ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+            ret.push(createSong(list[i]))
         }
         return ret
     },
     playSong(song) {
         let url = ''
-        axios.get('http://localhost:3000/song/url',{
-            params: {
-                id: song.mid
-            }
-        }).then((result) => {
-            let res = result.data
-            url = res.data[0].url
-            song.url = url
-            this.insertSong(song)
-        }) 
+        let params = {
+          id: song.mid
+        }
+        Axios(getSongUrl,params).then((res) => {
+          url = res.data[0].url
+          song.url = url
+          this.insertSong(song)
+        })
     },
     getData(data) {
       this.$emit("getData",data)
@@ -119,6 +109,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .rankBox {
     width: 100%;
     height: 800px;
@@ -128,7 +119,7 @@ export default {
           width: 30%;
         }
       .rankContainer {
-        border: 1px solid #E1E1E2;
+        border: 1px solid $borderColor;
         margin-bottom: 20px;
         width: 30%;
         .rkPic {

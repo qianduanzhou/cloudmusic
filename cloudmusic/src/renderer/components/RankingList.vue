@@ -21,7 +21,8 @@
 <script>
 import RankBox from '../base/RankBox'
 import ImgList from '../base/ImgList'
-import axios from 'axios'
+
+import {Axios,toplist} from '../common/api'
 export default {
     data() {
         return {
@@ -39,10 +40,8 @@ export default {
     },
     methods: {
         initRankList() {
-            axios.get('http://localhost:3000/toplist').then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    let list = res.list
+            Axios(toplist).then((res) => {
+                let list = res.list
                     for(let i = 0; i < list.length; i ++) {
                         switch (list[i].name) {
                         case '云音乐新歌榜':
@@ -124,7 +123,6 @@ export default {
                     this.rankingList1 = list.slice(0,4)
                     this.specailList = [res.artistToplist]
                     this.rankingList2 = list.slice(4,list.length)
-                }
             })
         },
         toDetail(data) {
@@ -142,12 +140,13 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .rankingList {
     .rkTitle {
         padding: 10px 0;
         margin-top: 20px;
         font-size: 20px;
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
     }
     .rkbox {
         margin-top: 20px;

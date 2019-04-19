@@ -91,9 +91,10 @@
 
 <script>
 import {mapGetters,mapMutations,mapActions} from 'vuex'
-import axios from 'axios'
 import DropList from '../base/DropList'
 import Album from '../base/Album'
+import {Axios,getSongUrl} from '../common/api'
+
 
 const offSetLeft = 250
 const boxWidth = 12
@@ -348,21 +349,19 @@ export default {
       }
     },
     _getUrl(mid,index) {
-      axios.get('http://localhost:3000/song/url',{
-        params: {
-            id: mid
-        }
-        }).then((result) => {
-            let res = result.data
-            let url = res.data[0].url
-            let list = this.playList.slice(0)
-            list[index].url = url   
-            this.selectPlay({
-              list:this.sequenceList,
-              index:index
-            })
-            this.isPreNext = false;
+      let params = {
+        id: mid
+      }
+      Axios(getSongUrl,params).then((res) => {
+        let url = res.data[0].url
+        let list = this.playList.slice(0)
+        list[index].url = url   
+        this.selectPlay({
+          list:this.sequenceList,
+          index:index
         })
+        this.isPreNext = false;
+      })
     },
     ...mapActions([
       'selectPlay',
@@ -379,15 +378,13 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .bottom {
-    .modules {
-            
-        }
     position: fixed;
     z-index: 1000;
     bottom: 0;
     box-sizing: border-box;
-    border-top: 1px solid #E1E1E2;
+    border-top: 1px solid $borderColor;
     width: 100%;
     height: 50px;
     background: #F6F6F8;
@@ -498,7 +495,7 @@ export default {
       .listContainer {
         width: 50px;
         border-radius: 10px;
-        background: #E1E1E2;
+        background: $borderColor;
         padding: none;
         .list {
           font-size: 18px;
@@ -521,24 +518,24 @@ export default {
       .bplayContainer {
         width: 100%;
         height: 40px;
-        border-bottom: 1px solid #E1E1E2;
+        border-bottom: 1px solid $borderColor;
         .bplayItem {
           font-size: 14px;
           padding: 5px 30px;
-          border-top: 1px solid #E1E1E2;
-          border-bottom: 1px solid #E1E1E2;
+          border-top: 1px solid $borderColor;
+          border-bottom: 1px solid $borderColor;
           color: #555555;
           cursor: pointer;
           &:first-child {
             border-top-left-radius: 5px;
             border-bottom-left-radius: 5px;
-            border-right: 1px solid #E1E1E2;
-            border-left: 1px solid #E1E1E2;
+            border-right: 1px solid $borderColor;
+            border-left: 1px solid $borderColor;
           }
           &:last-child {
             border-top-right-radius: 5px;
             border-bottom-right-radius: 5px;
-            border-right: 1px solid #E1E1E2;
+            border-right: 1px solid $borderColor;
           }
           &.active {
             background: #7C7D85;
@@ -557,7 +554,7 @@ export default {
         }
         .bCollection {
           padding-right: 10px;
-          border-right: 1px solid #E1E1E2;
+          border-right: 1px solid $borderColor;
           .icon-shoucanggedan {
             font-size: 15px;
           }

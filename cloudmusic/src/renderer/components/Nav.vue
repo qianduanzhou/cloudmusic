@@ -187,13 +187,14 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .nav {
     position: fixed;
     z-index: 1;
     box-sizing: border-box;
     width: 200px;
     height: 600px;
-    border-right: 1px solid #E1E1E2;
+    border-right: 1px solid $borderColor;
     overflow-y: scroll;
     .navContainer {
          .navContent {
@@ -285,7 +286,7 @@ export default {
         width: 200px;
         height: 60px;
         z-index: 999;
-        border-top: 1px solid #E1E1E2;
+        border-top: 1px solid $borderColor;
         .pic {
             cursor: pointer;
             position: relative;

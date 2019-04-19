@@ -88,7 +88,7 @@
           <p class="comtitle" ref = 'comment'>
               最新评论
           </p>
-          <comment :list="commentList" :songListId="parseInt(this.$route.params.idx)" @deleteComment="deleteCom"></comment>
+          <comment :list="commentList" :songListId="parseInt(this.$route.params.idx)" :type="2" @deleteComment="deleteCom"></comment>
           <el-pagination
             style="margin:20px 0 50px 50%;transform:translateX(-50%)"
             background
@@ -105,18 +105,19 @@
               </template>
           </ImaList>
           <div v-loading="loading" v-if="loading"></div>
-          <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;">没有更多评论了~~~</p>
+          <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;"  v-if="!loading">没有更多收藏者了~~~</p>
       </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
 import {createSong} from '../common/song'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
+
+import {Axios,toplistDetail,getSongListDetail,getComment,getSLCollecter,getSongUrl,collectSongList,sendComment} from '../common/api' 
 
 export default {
     data() {
@@ -149,12 +150,16 @@ export default {
         Comment,
         ImaList
     },
-    mounted() {
-        this.init()
+    created() {
+        this.idx = parseInt(this.$route.params.idx)
+        this.id = parseInt(this.$route.params.id)
         this.initSongListDetail()
         this.initCommentList()
         this.initCollecter()
         this.moreCollecter()
+    },
+    mounted() {
+        this.init()
     },
     computed: {
         ...mapGetters([
@@ -183,62 +188,43 @@ export default {
                 }
             }, 500); 
         },
-        async initSongListDetail() {
-            let idx = this.$route.params.idx
-            await axios.get('http://localhost:3000/top/list',{
-                params:{
-                    idx: idx
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.detail = res.playlist
-                    this.collectNum = res.playlist.subscribedCount
-                    let des = res.playlist.description
-                    des = des.split('\n')
-                    des.forEach((item,index) => {
-                        if(item == '') {
-                            des[index] = '&#8197;'
-                        }
-                    })
-                    this.description = des
-                    this._normalizeSongList(this.detail.tracks).then((ret) => {
-                        this.songList = ret
-                        this.songListc = ret
-                    })
-                    
-                }
-            })
-            
+        initSongListDetail() {
+            let params = {
+                idx:this.idx
+            }
+            Axios(toplistDetail,params).then((res) => {
+                this.detail = res.playlist
+                this.collectNum = res.playlist.subscribedCount
+                let des = res.playlist.description
+                des = des.split('\n')
+                des.forEach((item,index) => {
+                    if(item == '') {
+                        des[index] = '&#8197;'
+                    }
+                })
+                this.description = des
+                this.songList = this._normalizeSongList(this.detail.tracks)
+                this.songListc = this._normalizeSongList(this.detail.tracks)
+            })        
         },
         initCommentList() {
-            let id = this.$route.params.id
-            axios.get('http://localhost:3000/comment/playlist',{
-                params:{
-                    id: id
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.commentList = res.comments
-                    this.total = res.total
-                }
+            let params = {
+                id: this.id
+            }
+            Axios(getComment,params).then((res) => {
+                this.commentList = res.comments
+                this.total = res.total
             })
         },
 
         initCollecter() {
-            let id = this.$route.params.id
-            axios.get('http://localhost:3000/playlist/subscribers',{
-                params: {
-                    id: id,
-                    limit: 50
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.collecterList = res.subscribers
-                    this.moreColl = res.more
-                }
+            let params = {
+                id: this.id,
+                limit: 50
+            }
+            Axios(getSLCollecter,params).then((res) => {
+                this.collecterList = res.subscribers
+                this.moreColl = res.more
             })
         },
         moreCollecter() {
@@ -250,28 +236,26 @@ export default {
                     if(clientHeight + scrollTop >= scrollHeight && this.cur == 2 && this.moreColl) {
                         let id = this.$route.params.id
                         this.offset += 50
-                        axios.get('http://localhost:3000/playlist/subscribers',{
-                            params: {
-                                id: id,
-                                offset: this.offset
+                        let params = {
+                            id: this.id,
+                            limit: 50,
+                            offset: this.offset
+                        }
+                        Axios(getSLCollecter,params).then((res) => {
+                            this.moreColl = res.more
+                            
+                            if(!this.moreColl) {
+                                return this.loading = false
                             }
-                        }).then((result) => {
-                            let res = result.data
-                            if(res.code === 200) {
-                                this.moreColl = res.more
-                                
-                                if(!this.moreColl) {
-                                    return this.loading = false
-                                }
-                                this.collecterList = this.collecterList.concat(res.subscribers)
-                            }
+                            this.collecterList = this.collecterList.concat(res.subscribers)
                         })
                     }
                 } 
             }, 500);           
         },
-        async _normalizeSongList(list) {
+        _normalizeSongList(list) {
             let ret = []
+             console.log(list[0])
             for(let i = 0; i < list.length; i ++) {
                 let id = list[i].ar[0].id
                 let mid = list[i].id
@@ -282,7 +266,7 @@ export default {
                 let picUrl = list[i].al.picUrl
                 let alia = list[i].alia[0]
                 let url = ''
-                ret.push(createSong(id,mid,singer,name,album,duration,picUrl,url,alia))
+                ret.push(createSong(list[i]))
             }
             return ret
         },
@@ -290,64 +274,56 @@ export default {
             /*标记*/
             let url = ''
             let index = Math.ceil(Math.random() * (this.songList.length-1))
-            axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: this.songListc[index].mid
-                    }
-                }).then((result) => {
-                    let res = result.data
-                    url = res.data[0].url
-                    this.songListc[index].url = url
-                    this.selectPlay({
-                       list:this.songListc,
-                       index:index
-                    })
+            let params = {
+                id:this.id
+            }
+            Axios(getSongUrl,params).then((res) => {
+                url = res.data[0].url
+                this.songListc[index].url = url
+                this.selectPlay({
+                   list:this.songListc,
+                   index:index
                 })
+            })
         },
         collect() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/playlist/subscribe',{
-                params: {
-                    t: 1,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                t: 1,
+                id: this.id,
+                timestamp: (new Date()).getTime()   
+            }
+            Axios(collectSongList,params).then((res) => {
                 let collectList = this.collectSongList.slice(0)
-                collectList.push(id)
+                collectList.push(this.id)
                 this.set_collectSongList(collectList)
                 this.collectNum += 1
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'收藏成功',
+                    center: true
+                });
+            })    
         },
         canCollect() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/playlist/subscribe',{
-                params: {
-                    t: 2,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                t: 2,
+                id: this.id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(collectSongList,params).then((res) => {
                 let collectList = this.collectSongList.slice(0)
                 let index = collectList.findIndex((item) => {
-                    return item == id
+                    return item == this.id
                 })
                 collectList.splice(index,1)
                 this.set_collectSongList(collectList)
                 this.collectNum -= 1
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'取消收藏成功',
+                    center: true
+                });
+            })      
         },
         search() {
             let ret = []
@@ -362,40 +338,31 @@ export default {
 
         changePage(index) {
             let offset = (index-1) * this.limit
-            axios.get('http://localhost:3000/comment/playlist',{
-                params:{
-                    id: this.$route.params.id,
-                    offset: offset
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
+            let params = {
+                id: this.id,
+                offset: offset
+            }
+            Axios(getComment,params).then((res) => {
                     this.commentList = res.comments
-                    this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
-                }
+                this.$refs.SongListDetail.scrollTop = this.$refs.comment.offsetTop - 10
             })
         },
         sendComment() {
-            let id = parseInt(this.$route.params.id)
-            axios.get('http://localhost:3000/comment',{
-                params: {
-                    t: 1,
-                    type: 2,
-                    id: id,
-                    content: this.commentContent,
-                    timestamp: (new Date()).getTime()
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.$message({
-                        type:'success',
-                        message: '发送成功',
-                        center: true
-                    });
-                    this.commentContent = ''
-                    this.commentList.unshift(res.comment)
-                }
+            let params = {
+                t: 1,
+                type: 2,
+                id: this.id,
+                content: this.commentContent,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(sendComment,params).then((res) => {
+                this.$message({
+                    type:'success',
+                    message: '发送成功',
+                    center: true
+                });
+                this.commentContent = ''
+                this.commentList.unshift(res.comment)
             })
         },
         deleteCom(id) {
@@ -415,6 +382,7 @@ export default {
 </script>
 
 <style lang='scss'>
+@import '../assets/css/base.scss';
 .SongListDetail {
     position: fixed;
     z-index: 99;
@@ -452,7 +420,7 @@ export default {
                     font-size: 12px;
                     color: #555555;
                     padding: 0 10px;
-                    border-left: 1px solid #E1E1E2;
+                    border-left: 1px solid $borderColor;
                     position: absolute;
                     right: 10px;
                     &:nth-of-type(1){
@@ -489,7 +457,7 @@ export default {
                 .item {
                     font-size: 13px;
                     margin-right: 15px;
-                    border: 1px solid #E1E1E2;
+                    border: 1px solid $borderColor;
                     padding: 5px 10px;
                     border-radius: 4px;
                     color:#555555;
@@ -627,7 +595,7 @@ export default {
             .searchBox {
                 width: 170px;
                 height: 25px;
-                border:1px solid #E1E1E2;
+                border:1px solid $borderColor;
                 padding-left: 15px;
                 border-radius: 20px;
                 box-sizing: border-box;
@@ -649,14 +617,14 @@ export default {
     }
     .table {
         width: 100%;
-        border-top: 1px solid #E1E1E2;
+        border-top: 1px solid $borderColor;
         box-sizing: border-box;
         .tableItem {
             box-sizing: border-box;
             padding: 10px 0 10px 10px;
             font-size: 12px;
             color: #666666;
-            border-left: 1px solid #E1E1E2;
+            border-left: 1px solid $borderColor;
         }
         .tControl {
             width: 90px;
@@ -680,7 +648,7 @@ export default {
             width: 93.5%;
             background: #FFFFFF;
             margin: 10px;
-            border: 1px solid #E1E1E2;
+            border: 1px solid $borderColor;
             height: 50px;
             outline: none;
             &::placeholder {

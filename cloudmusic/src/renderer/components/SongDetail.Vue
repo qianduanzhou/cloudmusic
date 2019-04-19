@@ -12,8 +12,8 @@
                       </div>
                   </div>
                   <footer class="songControl allCenter">
-                      <div class="item allCenter">
-                          <i class=" iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" @click="collect(currentSong.mid)" :plain="true"></i>
+                      <div class="item allCenter" @click="collect(currentSong.mid)">
+                          <i class=" iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" :plain="true"></i>
                           <i class=" iconfont icon-xinaixin" style="color:red;" :plain="true" @click="canCollect(currentSong.mid)" v-if="isCollect(currentSong.mid)"></i>
                           <p>喜欢</p>
                       </div>
@@ -63,11 +63,11 @@
                   <p class="comtitle">
                       精彩评论
                   </p>
-                  <comment :list="hotComment"></comment>
+                  <comment :list="hotComment" type="0" v-if="hotComment.length > 0"></comment>
                   <p class="comtitle" style="margin-top:40px" ref = 'comment'>
                       最新评论({{total}})
                   </p>
-                  <comment :list="commentList"></comment>
+                  <comment :list="commentList" type="0" v-if="hotComment.length > 0" :key="commentList[0].user.userId"></comment>
               </div>
               <el-pagination
                 style="margin-top:20px;"
@@ -113,6 +113,8 @@ import {bfLyc} from '../common/utils'
 import Comment from '../base/comment'
 import Same from '../base/Same'
 import axios from 'axios'
+import {Axios,getLyric,getSongComment,getSameSongList,getSameSong,getSamePeople,
+likeMusic} from '../common/api'
 
 export default {
     data() {
@@ -148,10 +150,19 @@ export default {
     },
     watch: {
         currentSong(newVal) {
+            this.id = this.currentSong.mid
             this.initLyric()
+            this.initComment()
+            this.initSameSongList()
+            this.initSameSong()
+            this.initSamePersonList()
         }
     },
-    mounted() {
+    created() {
+        this.id = parseInt(this.currentSong.mid)
+        this.sameParams = {
+            id:this.id
+        }
         this.toWord()
         this.initLyric()
         this.initComment()
@@ -164,111 +175,72 @@ export default {
     },
     methods: {
         initLyric() {
-            axios.get('http://localhost:3000/lyric',{
-                params:{
-                    id:this.currentSong.mid
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.lyc = bfLyc(res.lrc.lyric)
-                }
+            Axios(getLyric,this.sameParams).then((res) => {
+                this.lyc = bfLyc(res.lrc.lyric)
             })
         },
         initComment() {
-            axios.get('http://localhost:3000/comment/music',{
-                params:{
-                    id:this.currentSong.mid
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.hotComment = res.hotComments
-                    this.commentList = res.comments
-                    this.total = res.total
-                }
+            Axios(getSongComment,this.sameParams).then((res) => {
+                this.hotComment = res.hotComments
+                this.commentList = res.comments
+                this.total = res.total
             })
         },
         initSameSongList() {
-            axios.get('http://localhost:3000/simi/playlist',{
-                params:{
-                    id:this.currentSong.mid
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.songList = res.playlists
-                }
+            Axios(getSameSongList,this.sameParams).then((res) => {
+                this.songList = res.playlists
             })
         },
 
         initSameSong() {
-            axios.get('http://localhost:3000/simi/song',{
-                params:{
-                    id:this.currentSong.mid
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.sameSong = res.songs
-                }
+            Axios(getSameSong,this.sameParams).then((res) => {
+                this.sameSong = res.songs
             })
         },
         initSamePersonList() {
-            axios.get('http://localhost:3000/simi/user',{
-                params:{
-                    id:this.currentSong.mid
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.samePerson = res.userprofiles
-                }
+            Axios(getSamePeople,this.sameParams).then((res) => {
+                this.samePerson = res.userprofiles
             })
         },
         isCollect(id) {
             return this.collectSong.includes(id)
         },
         collect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
-                    like:true,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                like:true,
+                id: id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 collectList.push(id)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'收藏成功',
+                    center: true
+                });
+            })   
         },
         canCollect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
+            let params =  {
                     like:false,
                     id: id,
                     timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 let index = collectList.findIndex((item) => {
                     return item == id
                 })
                 collectList.splice(index,1)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'取消收藏成功',
+                    center: true
+                });
+            })  
         },
         // 调到指定歌词
         toWord() {
@@ -304,17 +276,13 @@ export default {
         },
         changePage(index) {
             let offset = (index-1) * this.limit
-            axios.get('http://localhost:3000/comment/music',{
-                params:{
-                    id: this.currentSong.mid,
-                    offset: offset
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code == 200) {
-                    this.commentList = res.comments
-                    this.$refs.container.scrollTop = this.$refs.comment.offsetTop - 10
-                }
+            let params = {
+                id: this.id,
+                offset: offset
+            }
+            Axios(getSongComment,params).then((res) => {
+                this.commentList = res.comments
+                this.$refs.container.scrollTop = this.$refs.comment.offsetTop - 10
             })
         },
         ...mapMutations({
@@ -325,6 +293,7 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+@import '../assets/css/base.scss';
 .big-enter-active {
   animation: big-in .2s;
 }
@@ -566,7 +535,7 @@ export default {
             margin-right: 70px;
             .comHeader {
                 width: 100%;
-                border-bottom: 1px solid #E1E1E2;
+                border-bottom: 1px solid $borderColor;
                 padding-bottom: 10px;
                 .title {
                     font-size:  19px;
@@ -582,7 +551,7 @@ export default {
                 width: 530px;
                 height: 50px;
                 box-sizing: border-box;
-                border:1px solid #E1E1E2;
+                border:1px solid $borderColor;
                 margin: 30px auto;
                 background: #F0F0F2;
                 padding: 10px;
@@ -592,7 +561,7 @@ export default {
                     width: 100%;
                     height: 30px;
                     background: #FFFFFF;
-                    border: 1px solid #E1E1E2;
+                    border: 1px solid $borderColor;
                     &::placeholder {
                         font-size: 14px;
                         padding-left: 20px;
@@ -611,7 +580,7 @@ export default {
             width: 240px;
             .comHeader {
                 width: 100%;
-                border-bottom: 1px solid #E1E1E2;
+                border-bottom: 1px solid $borderColor;
                 padding-bottom: 10px;
                 .title {
                     font-size:  19px;
