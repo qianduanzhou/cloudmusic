@@ -1,6 +1,6 @@
 <template>
 
-  <div class="SongListDetail scrollStyle" ref="SongListDetail" style="width: 100%;height: 100%;">
+  <div class="SongListDetail scrollStyle" ref="SongListDetail">
       <header class="SongListDetailHeader">
           <div class="listPic bgc" :style="{backgroundImage:`url(${detail.coverImgUrl})`}"></div>
           <div class="listDetailContainer">
@@ -70,7 +70,7 @@
           <div class="tableItem tDuration">时长</div>
       </div>
       
-      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songListc.length">
+      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="32" v-if="songList.length > 0" :key="songListc.length">
 
       </album>
 
@@ -112,6 +112,7 @@
 
 <script>
 import {createSong} from '../common/song'
+import {initPage} from '../common/utils'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../base/Album'
 import Comment from '../base/comment'
@@ -179,13 +180,11 @@ export default {
     methods: {
         
         init() {
+
             setTimeout(() => {
-                this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                window.onresize = () => {
-                    this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                    this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                }
+                let outside = document.documentElement,
+                innerside = this.$refs.SongListDetail
+                initPage(outside,innerside)
             }, 500); 
         },
         initSongListDetail() {
@@ -255,7 +254,6 @@ export default {
         },
         _normalizeSongList(list) {
             let ret = []
-             console.log(list[0])
             for(let i = 0; i < list.length; i ++) {
                 let id = list[i].ar[0].id
                 let mid = list[i].id
@@ -387,6 +385,8 @@ export default {
     position: fixed;
     z-index: 99;
     left: 200px;
+    width: 880px;
+    height: 570px;
     background: #FAFAFA;
     top: 50px;
     overflow: hidden;

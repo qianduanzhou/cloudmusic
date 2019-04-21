@@ -42,7 +42,7 @@
 
 <script>
 import { create } from 'domain';
-import axios from 'axios'
+import {Axios,getSongUrl,likeMusic} from '../common/api'
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 export default {
     props: {
@@ -101,15 +101,12 @@ export default {
             this.Songsc = this.Songs.slice(0,50)
             this.all = false;
         },
-        async playsong(index) {
+        playsong(index) {
             let url = ''
             if(this.types === 4) {
-                axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: this.Songsc[index].mid
-                    }
-                }).then((result) => {
-                    let res = result.data
+                Axios(getSongUrl,{
+                    id:this.Songsc[index].mid
+                }).then((res) => {
                     url = res.data[0].url
                     this.Songsc[index].url = url
                     this.insertSong(this.Songsc[index])
@@ -117,22 +114,16 @@ export default {
             }else {
                 if(!this.Songsc[index].picUrl) {
                     let aid = this.Songsc[index].aid
-                    await axios.get('http://localhost:3000/album',{
-                        params: {
-                            id: aid
-                        }
-                    }).then((result) => {
-                        let res = result.data
+                    Axios(getSongUrl,{
+                        id: aid
+                    }).then((res) => {
                         let picUrl = res.album.picUrl
                         this.Songsc[index].picUrl = picUrl
                     })
                 }
-                axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: this.Songsc[index].mid
-                    }
-                }).then((result) => {
-                    let res = result.data
+                Axios(getSongUrl,{
+                    id: this.Songsc[index].mid
+                }).then((res) => {
                     url = res.data[0].url
                     this.Songsc[index].url = url
                     this.selectPlay({
@@ -143,45 +134,41 @@ export default {
             }  
         },
         collect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
-                    like:true,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                 like:true,
+                id: id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 collectList.push(id)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'喜欢该音乐成功',
+                    center: true
+                });
+            })      
         },
         canCollect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
-                    like:false,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                like:false,
+                id: id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 let index = collectList.findIndex((item) => {
                     return item == id
                 })
                 collectList.splice(index,1)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'取消喜欢音乐成功',
+                    center: true
+                });
+            })         
         },
         ...mapActions([
             'selectPlay',
@@ -295,8 +282,7 @@ export default {
                         }
                     }
                     .aSinger {
-                        margin-left: 10px;
-                        width: 20%;
+                        width: 21%;
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
@@ -308,7 +294,7 @@ export default {
                         text-overflow: ellipsis;
                         width: 22%;
                         box-sizing: border-box;
-                        padding-left: 10px;
+                        padding-left: 3px;
                     }
                     .duration {
                         width: 10%;
@@ -328,5 +314,21 @@ export default {
                 }
             }
         }
-    } 
+    }
+    @media screen and (min-width:1200px) {
+        .album {
+            .songContainer {
+                .songs {
+                    .songDetail {
+                            .aSinger {
+                                width: 22%;
+                            }
+                            .aAblum {
+                                width: 22%;
+                            }    
+                        }
+                    }
+            }
+        }
+    }
 </style>

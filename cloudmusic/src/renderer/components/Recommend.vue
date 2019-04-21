@@ -1,7 +1,7 @@
 <template>
   <div class="recommend"  v-loading="loading">
       <div v-if="$route.fullPath=='/find/recommend'">
-          <swiper :list="bannerList"></swiper>
+          <swiper :list="bannerList"  v-if="bannerList.length>1"></swiper>
       </div>
       <div class="head">
           <p class="title">推荐歌单</p>
@@ -68,7 +68,7 @@ import ImgList from '../base/ImgList'
 import MusicList from '../base/MusicList'
 import {createSong} from '../common/song'
 import {mapActions} from 'vuex'
-import {Axios,getBanner,getPersonalized,getPrivatecontent,getRecMv,getNewSong} from '../common/api'
+import {Axios,getBanner,getPersonalized,getPrivatecontent,getRecMv,getNewSong,getSongUrl} from '../common/api'
 
 export default {
 
@@ -131,25 +131,14 @@ export default {
         },
         playMusic(data){
             let song = data.song
-            let id = song.artists[0].id
-            let mid = song.id
-            let singer = song.artists[0].name
-            let name = song.name
-            let album = song.album.name
-            let duration = song.duration
-            let picUrl = song.album.picUrl
-            let alia = song.alias[0]
-            let url = ''
-            axios.get('http://localhost:3000/song/url',{
-                    params: {
-                        id: mid
-                    }
-                }).then((result) => {
-                    let res = result.data
-                    url = res.data[0].url
-                    let Song = createSong(id,mid,singer,name,album,duration,picUrl,url,alia)
-                    this.insertSong(Song)
-                })
+            Axios(getSongUrl,{
+                id : song.id
+            }).then((res) => {
+                let url = res.data[0].url
+                let Song = createSong(song)
+                Song.url = url
+                this.insertSong(Song)
+            })
         },
         toDayRec() {
             this.$router.push('/find/recommend/dayRecSong')

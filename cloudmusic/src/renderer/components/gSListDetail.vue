@@ -51,7 +51,6 @@
 
 <script>
 import DropList from '../base/DropList'
-import axios from 'axios'
 import {Axios,getGSongList} from '../common/api'
 
 export default {
@@ -111,12 +110,15 @@ export default {
 .gSListDetail {
     position: fixed;
     z-index: 99;
+    width: 880px;
+    height: 570px;
     left: 200px;
     box-sizing: border-box;
     padding: 30px 25px;
     background: #FAFAFA;
     top: 100px;
     overflow-y: scroll;
+    border-left: 1px solid $borderColor;
     .gsdHeader {
         border-bottom: 1px solid $borderColor;
         padding-bottom: 10px;

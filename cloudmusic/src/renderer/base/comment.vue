@@ -19,7 +19,7 @@
 
 <script>
 import {mapGetters} from 'vuex'
-import axios from 'axios'
+import {Axios,sendComment} from '../common/api'
 export default {
     data() {
         return {
@@ -59,19 +59,15 @@ export default {
             }
         },
         deleteComment(item) {
-            axios.get('http://localhost:3000/comment',{
-                params: {
-                    t: 0,
-                    type: this.type,
-                    id: this.songListId,
-                    commentId:item.commentId,
-                    timestamp: (new Date()).getTime()
-                }
-            }).then((result) => {
-                let res = result.data
-                if(res.code === 200) {
-                    this.$emit('deleteComment',item.commentId)
-                }
+            let params = {
+                t: 0,
+                type: this.type,
+                id: this.songListId,
+                commentId:item.commentId,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(sendComment,params).then((res) => {
+                this.$emit('deleteComment',item.commentId)
             })
         },
         likeComment(commentId,index) {

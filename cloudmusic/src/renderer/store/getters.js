@@ -6,6 +6,7 @@ export const password = state => state.userInfo.password
 export const collectSongList = state => state.userInfo.collectSongList
 export const collectSong = state => state.userInfo.collectSong
 export const collectSinger = state => state.userInfo.collectSinger
+export const collectAlbum = state => state.userInfo.collectAlbum
 
 
 export const singer = state => state.songs.singer

@@ -33,6 +33,17 @@ export function bfLyc(lrc) {
   return lrcObj;
 }
 
+//  初始化页面大小
+export const initPage = (outside,innerside) => {
+    innerside.style.width = `${outside.offsetWidth - 200}px`
+    innerside.style.height = `${outside.clientHeight - 100}px`
+    window.onresize = () => {
+        innerside.style.width = `${outside.offsetWidth - 200}px`
+        innerside.style.height = `${outside.clientHeight - 100}px`
+    }  
+  }
+
+
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }

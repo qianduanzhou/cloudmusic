@@ -1,5 +1,5 @@
 <template>
-  <div class="nav scrollStyle" ref="nav">
+  <div class="nav scrollStyle" ref="nav" style="height:510px;">
       <ul class="navContainer">
           <li class="navContent">
               <p>推荐</p> 
@@ -7,15 +7,15 @@
           <li class="navContent">
               <router-link to="/find"><i class="iconfont icon-yinle"></i>发现音乐</router-link>
           </li>
-          <!-- <li>
+          <li class="navContent" v-show="userName">
               <router-link to="/fm"><i class="iconfont icon-iconku-zhuanqu-"></i>私人FM</router-link>
-          </li> -->
+          </li>
           <!-- <li>
               <router-link to="/video"><i class="iconfont icon-shipin1"></i>视频</router-link>
           </li> -->
-          <li class="navContent">
+          <!-- <li class="navContent">
               <router-link to="/friend"><i class="iconfont icon-pengyou"></i>朋友</router-link>
-          </li>
+          </li> -->
           <li class="navContent">
               <p>我的音乐</p> 
           </li>
@@ -71,7 +71,7 @@
 
 <script>
 import {mapGetters,mapMutations} from 'vuex'
-import axios from 'axios'
+import {Axios,getUserSongList,likeMusic} from '../common/api'
 
 export default {
     computed: {
@@ -95,18 +95,14 @@ export default {
         this.uid = parseInt(localStorage.getItem('userId'))
         this.initCreate()
     },
-    mounted() {
-        this.init()
+    updated() {
+        if(this.$refs.playWindow) {
+                this.$refs.nav.style.height = `${document.documentElement.clientHeight - this.$refs.playWindow.offsetHeight -100}px`
+        }else {
+           this.$refs.nav.style.height = `${document.documentElement.clientHeight - 100}px`
+        }
     },
     methods: {
-        init() {
-            this.$refs.nav.style.height = `${document.documentElement.clientHeight - 160}px`
-            window.onresize = () => {
-            setTimeout(() => {
-                this.$refs.nav.style.height = `${document.documentElement.clientHeight - 160}px`
-            }, 200);
-            }
-        },
         isCollect(id) {
             return this.collectSong.includes(id)
         },
@@ -117,67 +113,57 @@ export default {
             })
         },
         initCreate() {
-            axios.get('http://localhost:3000/user/playlist',{
-                params:{
-                    uid: this.uid
-                }
-                }).then((result) => {
-                let res = result.data
-                if(res.code === 200 ) {
-                    let list = res.playlist
-                    list.forEach((item) => {
-                        if(item.userId === this.uid) {
-                            this.createList.push(item)
-                        }else {
-                            this.collectList.push(item)
-                        }
-                    })
-                    console.log(this.createList)
-                    this.loveId = this.createList[0].id
-                    this.createList = this.createList.slice(1,this.createList.length)
-                }
+            Axios(getUserSongList,{
+                uid:this.uid
+            }).then((res) => {
+                let list = res.playlist
+                list.forEach((item) => {
+                    if(item.userId === this.uid) {
+                        this.createList.push(item)
+                    }else {
+                        this.collectList.push(item)
+                    }
                 })
+                this.loveId = this.createList[0].id
+                this.createList = this.createList.slice(1,this.createList.length)
+            })
         },
         collect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
+            let params = {
                     like:true,
                     id: id,
                     timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 collectList.push(id)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'喜欢该音乐成功',
+                    center: true
+                });
+            })        
         },
         canCollect(id) {
-            axios.get('http://localhost:3000/like',{
-                params: {
-                    like:false,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-                },
-            }).then((result) => {
-                let res = result.data
+            let params = {
+                like:false,
+                id: id,
+                timestamp: (new Date()).getTime()
+            }
+            Axios(likeMusic,params).then((res) => {
                 let collectList = this.collectSong.slice(0)
                 let index = collectList.findIndex((item) => {
                     return item == id
                 })
                 collectList.splice(index,1)
                 this.set_collectSong(collectList)
-            })
-            this.$message({
-                type:'success',
-                message:'取消收藏成功',
-                center: true
-            });
+                this.$message({
+                    type:'success',
+                    message:'取消喜欢音乐成功',
+                    center: true
+                });
+            })       
         },
         ...mapMutations({
             set_collectSong:'SET_COLLECTSONG'
@@ -194,7 +180,6 @@ export default {
     box-sizing: border-box;
     width: 200px;
     height: 600px;
-    border-right: 1px solid $borderColor;
     overflow-y: scroll;
     .navContainer {
          .navContent {

@@ -57,6 +57,8 @@ export const collectSongList = "/playlist/subscribe"
 //  获取精品歌单
 export const getGSongList = "/top/playlist/highquality"
 
+
+
 //  获取歌手列表
 export const getSinger = "/artist/list"
 //  获取歌手详情
@@ -101,8 +103,12 @@ export const toplistDetail = "/top/list"
 export const getAlbumDetail = '/album'
 //  获取专辑评论
 export const getAlbumComment = "/comment/album"
+//  获取已收藏的专辑
+export const getCollectAlbum = "/album/sublist"
 
 
+//  获取私人FM
+export const getFm = '/personal_fm'
 
 //  获取音乐url
 export const getSongUrl = "/song/url"

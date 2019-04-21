@@ -25,7 +25,7 @@
               <div class="word">
                   <header class="titleContainer">
                       <div class="alignCenter">
-                          <p class="title">{{currentSong.name}}</p>
+                          <p class="title wordNowrap">{{currentSong.name}}</p>
                           <p class="mv">MV</p>
                           <p class="mv">极高音质</p>
                       </div> 
@@ -110,9 +110,9 @@
 <script>
 import { mapGetters,mapMutations} from 'vuex'
 import {bfLyc} from '../common/utils'
+import {run} from '../common/d3'
 import Comment from '../base/comment'
 import Same from '../base/Same'
-import axios from 'axios'
 import {Axios,getLyric,getSongComment,getSameSongList,getSameSong,getSamePeople,
 likeMusic} from '../common/api'
 
@@ -122,6 +122,7 @@ export default {
             deg: 0,
             cur: 0,
             currentTime:0,
+            timer:'',
             mousein:false,
             lyc:"",
             total:0,
@@ -267,8 +268,13 @@ export default {
                 setTimeout(() => {
                     for(let i = 0; i < lis.length; i ++) {
                         if(lis[i].classList[1] == "active") {
-                            var height = this.$refs.outsideContainer.offsetHeight
-                            this.$refs.outsideContainer.scrollTop = `${lis[i].offsetTop-height/2}`
+                            let prevOffsetTop = lis[i-1].offsetTop ? lis[i-1].offsetTop : '',
+                            nowOffsetTop = lis[i].offsetTop ? lis[i].offsetTop : '',
+                            diff = nowOffsetTop - prevOffsetTop,
+                            t = 0,
+                            d = 30,
+                            height = this.$refs.outsideContainer.offsetHeight
+                            run(this.$refs.outsideContainer,this.timer,t,prevOffsetTop,diff,d,height)
                         }
                     }
                 }, 50);
@@ -429,6 +435,7 @@ export default {
                     height: 60px;
                     margin-top: 40px;
                     .title {
+                        width: 280px;
                         font-size: 26px;
                         font-weight: bold;
                     }
@@ -477,7 +484,8 @@ export default {
                     .wordContainer {
                         height: 320px;
                         .wordItem {
-                            color:#262627;
+                            padding: 8px 0;
+                            color:#3E3F3F;
                             margin-bottom: 15px;
                             font-size: 14px;
                         }

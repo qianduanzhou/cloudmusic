@@ -40,6 +40,12 @@
     clear: both;
 }
 
+.wordNowrap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .scrollStyle::-webkit-scrollbar {
     width: 10px;
 }
@@ -52,6 +58,5 @@
     background: #CFCFD1;
 }
 .scrollStyle::-webkit-scrollbar-track {
-    border-right:1px solid rgba(100,100,100,.2);
     background: rgba(188,188,188,.1);
 }

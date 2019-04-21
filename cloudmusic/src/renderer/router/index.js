@@ -15,6 +15,7 @@ import RankingListDetail from '../components/RankingListDetail'
 import MyCreate from '../components/MyCreate'
 import AlbumDetail from '../components/AlbumDetail'
 import SearchResult from '../components/SearchResult'
+import Fm from '../components/Fm'
 
 Vue.use(Router)
 export default new Router({
@@ -100,6 +101,11 @@ export default new Router({
       name:'searchResult',
       path:'/search/:keywords',
       component:SearchResult
+    },
+    {
+      name:'fm',
+      path:'/fm',
+      component:Fm
     },
     {
       name:'error',

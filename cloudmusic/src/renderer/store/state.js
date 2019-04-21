@@ -7,7 +7,8 @@ const state = {
         avatarUrl:'',
         collectSongList:[],
         collectSong:[],
-        collectSinger:[]
+        collectSinger:[],
+        collectAlbum:[]
     },
     songs:{
         singer: {},

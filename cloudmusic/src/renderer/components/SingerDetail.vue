@@ -1,6 +1,6 @@
 <template>
 
-  <div class="singerDetail scrollStyle" ref="singerDetail" style="width: 830px;height: 570px;">
+  <div class="singerDetail scrollStyle" ref="singerDetail">
       <header class="singeheader left">
           <div class="pic" :style ='{ backgroundImage: `url(${singerDetail.artist.img1v1Url})`}'></div>
           <div class="singInfo">
@@ -97,6 +97,7 @@ import Album from '../base/Album'
 import ImgList from '../base/ImgList'
 import {createSong} from '../common/song'
 import { resolve } from 'url';
+import {initPage} from '../common/utils'
 import {mapMutations,mapGetters,mapState} from 'vuex'
 import {Axios,getSingerDetail,getSingerAlbum,
 getAlbumDetail,getSingerMv,getSingerDesc,
@@ -148,13 +149,11 @@ export default {
     },
     methods: {
         init() {
+
             setTimeout(() => {
-                this.$refs.singerDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                this.$refs.singerDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                window.onresize = () => {
-                    this.$refs.singerDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                    this.$refs.singerDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                }
+                let outside = document.documentElement,
+                innerside = this.$refs.singerDetail
+                initPage(outside,innerside)
             }, 500); 
         },
         initSingerDetail (){
@@ -313,8 +312,11 @@ export default {
     z-index: 99;
     top: 50px;
     left: 200px;
+    width: 880px;
+    height: 570px;
     overflow: hidden;
     overflow-y: scroll;
+    border-left: 1px solid $borderColor;
     .singeheader {
         margin: 33px;
         .pic {

@@ -153,13 +153,12 @@
 </template>
 
 <script>
-import axios from 'axios'
 import DropList from '../base/DropList'
 import {createSong} from '../common/song'
 import {mapMutations,mapGetters,mapActions} from 'vuex'
 import {Axios,cellLogin,getUserSongList,getUserCollectSinger,getUserLikeMusic,
 getUserPlayHistory,Logout,getHotSearch,adviseSearch,getAlbumDetail,getSongUrl,
-} from '../common/api'
+getCollectAlbum} from '../common/api'
 
 const {ipcRenderer} = require('electron')
 
@@ -261,6 +260,7 @@ export default {
                 this.initCollectSingerList()
                 this.initLikeMusic()
                 this.initHistory()
+                this.initCollectAlbum()
             })
         },
 
@@ -345,7 +345,16 @@ export default {
                 this.set_collectSong(res.ids)
             })
         },
-
+        // 初始化已收藏专辑列表
+        initCollectAlbum() {
+            Axios(getCollectAlbum,this.params).then((res) => {
+                let ret = []
+                res.data.forEach((item) => {
+                    ret.push(item.id)
+                })
+                this.setCollectAlbum(ret)
+            })
+        },
         // 初始化播放历史
         initHistory() {
             let params = {
@@ -475,6 +484,7 @@ export default {
             set_collectSinger:'SET_COLLECTSINGER',
             set_collectSong:'SET_COLLECTSONG',
             setPlayHistoryList:'SET_PLAYHISTORYLIST',
+            setCollectAlbum:'SET_COLLECTALBUM'
         }),
         ...mapActions([
             'insertSong'

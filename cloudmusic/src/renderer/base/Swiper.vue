@@ -24,17 +24,15 @@ export default {
             default: []
         }
     },
-    data() {
-        return {
-           
-        }
-    },
     mounted() {
-         var mySwiper = new Swiper ('.swiper-container', {
-            loop: true,
+            var mySwiper = new Swiper ('.swiper-container', {
+            initialSlide :0,
+            observer:true,//修改swiper自己或子元素时，自动初始化swiper
+            observeParents:true,
              autoplay: {
-                delay: 2000,//1秒切换一次
+                delay: 3000
             },
+            loop: true,
             pagination: {
                 el: '.swiper-pagination',
                 dynamicBullets: true,

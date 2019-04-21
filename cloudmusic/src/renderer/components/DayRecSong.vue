@@ -1,5 +1,5 @@
 <template>
-  <div class="dayRecSong scrollStyle" ref="dayRecSong" style="height:100%;width:100%;">
+  <div class="dayRecSong scrollStyle" ref="dayRecSong">
       <header class="drsHeader spCenter">
           <div class="alignCenter">
               <img src="/static/logo.jpg" class="drsPic">
@@ -24,7 +24,7 @@
                     <span class="bcol">收藏全部</span>
               </div>
           </div>
-          <album :Songs="drSongList" :show="true" :types="1" :width='100' :nameWidth="31" v-if="drSongList.length > 0">
+          <album :Songs="drSongList" :show="true" :types="1" :width='100' :nameWidth="32" v-if="drSongList.length > 0">
           </album>
       </main>
   </div>
@@ -34,6 +34,7 @@
 import Album from '../base/Album'
 import {createSong} from '../common/song'
 import {mapActions} from 'vuex'
+import {initPage} from '../common/utils'
 import {Axios,getDRSong,getSongUrl} from '../common/api'
 export default {
     data() {
@@ -51,12 +52,9 @@ export default {
     methods: {
         init() {
             setTimeout(() => {
-                this.$refs.dayRecSong.style.width = `${document.documentElement.offsetWidth - 200}px`
-                this.$refs.dayRecSong.style.height = `${document.documentElement.clientHeight - 100}px`
-                window.onresize = () => {
-                    this.$refs.dayRecSong.style.width = `${document.documentElement.offsetWidth - 200}px`
-                    this.$refs.dayRecSong.style.height = `${document.documentElement.clientHeight - 100}px`
-                }
+                let outside = document.documentElement,
+                innerside = this.$refs.dayRecSong
+                initPage(outside,innerside)
             }, 500); 
         },
         initDRSong() {
@@ -100,6 +98,8 @@ export default {
     position: fixed;
     top: 50px;
     left: 200px;
+    width: 880px;
+    height: 570px;
     background: #FAFAFA;
     overflow-y: scroll;
 

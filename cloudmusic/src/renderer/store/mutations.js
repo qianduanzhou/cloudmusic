@@ -25,6 +25,9 @@ const mutations = {
     [types.SET_COLLECTSINGER](state,collectSinger) {
         state.userInfo.collectSinger = collectSinger
     },
+    [types.SET_COLLECTALBUM](state,collectAlbum) {
+        state.userInfo.collectAlbum = collectAlbum
+    },
 
     [types.SET_SINGER](state,singer) {
         state.songs.singer = singer

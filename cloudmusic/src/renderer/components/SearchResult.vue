@@ -14,7 +14,7 @@
             <div class="tableItem tAlbum">专辑</div>
             <div class="tableItem tDuration">时长</div>
         </div>
-        <album :Songs="songList" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songList[0].id">
+        <album :Songs="songList" :show="cur == 0" :types="1" :width='100' :nameWidth="32" v-if="songList.length > 0" :key="songList[0].id">
         </album>
         <p v-if="!songList" style="color:#666666;font-size:30px;margin:50px auto;width:100%;text-align:center;">没有找到关于"<b style="color:#0C73C2;">{{keywords}}"</b>的结果</p>
         <el-pagination v-if="songList"

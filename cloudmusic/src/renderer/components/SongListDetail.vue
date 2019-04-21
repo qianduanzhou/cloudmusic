@@ -1,6 +1,6 @@
 <template>
 
-  <div class="SongListDetail scrollStyle" ref="SongListDetail" style="width: 100%;height: 100%;">
+  <div class="SongListDetail scrollStyle" ref="SongListDetail">
       <header class="SongListDetailHeader">
           <div class="listPic bgc" :style="{backgroundImage:`url(${detail.coverImgUrl})`}"></div>
           <div class="listDetailContainer">
@@ -70,7 +70,7 @@
           <div class="tableItem tDuration">时长</div>
       </div>
       
-      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="31" v-if="songList.length > 0" :key="songListc.length">
+      <album :Songs="songListc" :show="cur == 0" :types="1" :width='100' :nameWidth="32" v-if="songList.length > 0" :key="songListc.length">
 
       </album>
 
@@ -111,8 +111,8 @@
 </template>
 
 <script>
-import axios from 'axios'
 import {createSong} from '../common/song'
+import {initPage} from '../common/utils'
 import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../base/Album'
 import Comment from '../base/comment'
@@ -178,12 +178,9 @@ export default {
         
         init() {
             setTimeout(() => {
-                this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                window.onresize = () => {
-                    this.$refs.SongListDetail.style.width = `${document.documentElement.offsetWidth - 200}px`
-                    this.$refs.SongListDetail.style.height = `${document.documentElement.clientHeight - 100}px`
-                }
+                let outside = document.documentElement,
+                innerside = this.$refs.SongListDetail
+                initPage(outside,innerside)
             }, 500); 
         },
         initSongListDetail() {
@@ -384,17 +381,19 @@ export default {
     position: fixed;
     z-index: 99;
     left: 200px;
-    background: #FAFAFA;
     top: 50px;
+    width: 880px;
+    height:570px;
+    background: #FAFAFA;
     overflow: hidden;
     overflow-y: scroll;
+	border-left: 1px solid $borderColor;
     .SongListDetailHeader {
         display: flex;
         margin: 30px;
         .listPic {
             width:200px;
             height: 200px;
-            border: 1px solid #ccc;
         }
         .listDetailContainer {
             margin-left: 30px;

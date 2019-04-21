@@ -28,8 +28,8 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 670,
     useContentSize: true,
-    width: 1020,
-    minWidth:1020,
+    width: 1080,
+    minWidth:1080,
     minHeight:670,
     frame: false,
     webPreferences: {webSecurity: false}
@@ -46,7 +46,6 @@ app.on('ready', createWindow)
 
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
-  BrowserWindow.addDevToolsExtension("C:\Users\Administrator\AppData\Local\Google\Chrome\User Data\Default\Extensions\nhdogjmejiglipccpnnnanhbledajbpd")
 }
 
 

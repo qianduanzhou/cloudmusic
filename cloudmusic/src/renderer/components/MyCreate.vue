@@ -42,6 +42,7 @@
 
 <script>
 import axios from 'axios'
+import {Axios,getUserCollectSinger,getCollectAlbum} from '../common/api'
 
 export default {
   data() {
@@ -58,34 +59,23 @@ export default {
   },
   methods: {
     initSinger() {
-      axios.get('http://localhost:3000/artist/sublist',{
-        params:{
-          uid:this.uid
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code === 200) {
-          this.singerList = res.data
-        }
+      Axios(getUserCollectSinger,{
+        uid:this.uid
+      }).then((res) => {
+        this.singerList = res.data
       })
     },
     initAlbum() {
-      axios.get('http://localhost:3000/album/sublist',{
-        params:{
-          uid:this.uid
-        }
-      }).then((result) => {
-        let res = result.data
-        if(res.code === 200) {
-          this.albumList = res.data
-        }
+      Axios(getCollectAlbum,{
+        uid:this.uid
+      }).then((res) => {
+        this.albumList = res.data
       })
     },
     toSinger(id) {
       this.$router.push(`/find/singer/${id}`)
     },
     toAlbum(id) {
-      // console.log(id)
       this.$router.push(`/album/${id}`)
     }
   }

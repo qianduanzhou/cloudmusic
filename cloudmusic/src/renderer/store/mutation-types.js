@@ -16,6 +16,8 @@ export const SET_COLLECTSONG = 'SET_COLLECTSONG'
 
 export const SET_COLLECTSINGER = 'SET_COLLECTSINGER'
 
+export const SET_COLLECTALBUM = 'SET_COLLECTALBUM'
+
 //  歌曲
 export const SET_SINGER = 'SET_SINGER'
 
