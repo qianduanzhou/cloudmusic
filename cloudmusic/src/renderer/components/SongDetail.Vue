@@ -11,10 +11,13 @@
                       </div>
                   </div>
                   <footer class="songControl allCenter">
-                      <div class="item allCenter" @click="collect(currentSong.mid)">
-                          <i class=" iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" :plain="true"></i>
-                          <i class=" iconfont icon-xinaixin" style="color:red;" :plain="true" @click="canCollect(currentSong.mid)" v-if="isCollect(currentSong.mid)"></i>
+                      <div class="item allCenter" @click="collect" v-if="!isCollect()">
+                          <i class=" iconfont icon-xinaixin1" :plain="true"></i>
                           <p>喜欢</p>
+                      </div>
+                      <div class="item allCenter" @click="canCollect"  v-if="isCollect()">
+                          <i class=" iconfont icon-xinaixin" style="color:red;" :plain="true"></i>
+                          <p>已喜欢</p>
                       </div>
                       <div class="item allCenter"><i class="iconfont icon-shoucanggedan"></i><p>收藏</p></div>
                       <div class="item allCenter"><i class="iconfont icon-xiazai"></i><p>下载</p></div>
@@ -113,16 +116,14 @@ import Comment from '../base/comment'
 import Same from '../base/Same'
 import {Axios,getLyric,getSongComment,getSameSongList,getSameSong,getSamePeople,
 likeMusic} from '../common/api'
+import {lyricMixin,toSAS,collectMusic} from '../common/mixin'
+
 
 export default {
+    mixins:[lyricMixin,toSAS,collectMusic],
     data() {
         return {
             deg: 0,
-            cur: 0,
-            currentTime:0,
-            timer:'',
-            mousein:false,
-            lyc:"",
             total:0,
             limit: 20,
             hotComment:[],
@@ -137,42 +138,31 @@ export default {
         Same
     },
     computed: {
-        ...mapGetters([
-            'currentSong',
-            'playing',
-            'audio',
-            'collectSong'
-        ]),
         playClass() {
             return this.playing ? 'play' : 'pause'
         }
     },
     watch: {
         currentSong(newVal) {
-            this.id = this.currentSong.mid
+            this.id = parseInt(this.currentSong.mid)
+            this.initAll()
+        }
+    },
+    created() {
+        this.sameParams = {
+            id:this.id
+        }
+        this.toWord()
+        this.initAll()
+    },
+    methods: {
+        initAll() {
             this.initLyric()
             this.initComment()
             this.initSameSongList()
             this.initSameSong()
             this.initSamePersonList()
-        }
-    },
-    created() {
-        this.id = parseInt(this.currentSong.mid)
-        this.sameParams = {
-            id:this.id
-        }
-        this.toWord()
-        this.initLyric()
-        this.initComment()
-        this.initSameSongList()
-        this.initSameSong()
-        this.initSamePersonList()
-    },
-    updated(){
-        this.toWordPosition()
-    },
-    methods: {
+        },
         initLyric() {
             Axios(getLyric,this.sameParams).then((res) => {
                 this.lyc = bfLyc(res.lrc.lyric)
@@ -201,83 +191,6 @@ export default {
                 this.samePerson = res.userprofiles
             })
         },
-        isCollect(id) {
-            return this.collectSong.includes(id)
-        },
-        collect(id) {
-            let params = {
-                like:true,
-                id: id,
-                timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                collectList.push(id)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'收藏成功',
-                    center: true
-                });
-            })   
-        },
-        canCollect(id) {
-            let params =  {
-                    like:false,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                let index = collectList.findIndex((item) => {
-                    return item == id
-                })
-                collectList.splice(index,1)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'取消收藏成功',
-                    center: true
-                });
-            })  
-        },
-        // 调到指定歌词
-        toWord() {
-            var _this = this
-            this.audio.addEventListener("timeupdate",function(e){
-                let currentTime = e.target.currentTime
-                for(let key in _this.lyc) {
-                    if(key == Math.floor(currentTime)) {
-                        if(_this.lyc[key] == "&#8197;") {
-                            continue;
-                        }
-                        _this.cur = key
-                    }
-                }
-            });
-        },
-        // 调到指定歌词的位置
-        toWordPosition() {
-            if(this.mousein) {
-                return 
-            }
-            this.$nextTick(() => {
-                let lis = this.$refs.wordContainer.children
-                setTimeout(() => {
-                    for(let i = 0; i < lis.length; i ++) {
-                        if(lis[i].classList[1] == "active" && lis[i-1]) {
-                            let prevOffsetTop = lis[i-1].offsetTop ? lis[i-1].offsetTop : '',
-                            nowOffsetTop = lis[i].offsetTop ? lis[i].offsetTop : '',
-                            diff = nowOffsetTop - prevOffsetTop,
-                            t = 0,
-                            d = 30,
-                            height = this.$refs.outsideContainer.offsetHeight
-                            run(this.$refs.outsideContainer,this.timer,t,prevOffsetTop,diff,d,height)
-                        }
-                    }
-                }, 50);
-            })
-        },
         changePage(index) {
             let offset = (index-1) * this.limit
             let params = {
@@ -288,19 +201,7 @@ export default {
                 this.commentList = res.comments
                 this.$refs.container.scrollTop = this.$refs.comment.offsetTop - 10
             })
-        },
-        toSongList(data) {
-            this.$router.push(`/songListDetail/${data.id}`)
-        },
-        toSinger() {
-            this.$router.push(`/singerDetail/${this.currentSong.id}`)
-        },
-        toAlbum() {
-            this.$router.push(`/album/${this.currentSong.aid}`)
-        },
-        ...mapMutations({
-            set_collectSong:'SET_COLLECTSONG'
-        })
+        }
     }
 }
 </script>
@@ -386,7 +287,7 @@ export default {
                     justify-content: space-between;
                     .item {
                         cursor: pointer;
-                        width: 18%;
+                        width: 19%;
                         border: 1px solid #BEBFC2;
                         padding: 5px;
                         border-radius: 3px;

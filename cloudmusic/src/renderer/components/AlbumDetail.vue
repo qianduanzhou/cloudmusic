@@ -26,7 +26,7 @@
                   </div>
               </div>
               <div class="alSingerDetail">
-                  <p class="alSinger">歌手：{{detail.artist.name}}</p>
+                  <p class="alSinger" @click="toSinger">歌手：{{detail.artist.name}}</p>
                   <p class="alTime">时间：{{detail.publishTime | middleTime}}</p>
               </div>
           </div>
@@ -271,6 +271,9 @@ export default {
             })
             this.commentList.splice(index,1)
         },
+        toSinger() {
+            this.$router.push(`/singerDetail/${this.detail.artist.id}`)
+        },
         ...mapActions([
             'selectPlay'
         ]),
@@ -293,6 +296,7 @@ export default {
     top: 50px;
     overflow: hidden;
     overflow-y: scroll;
+    overflow-x: hidden;
     .SongListDetailHeader {
         display: flex;
         margin: 30px;
@@ -395,6 +399,7 @@ export default {
                 font-size: 13px;
                 color:#333;
                 .alSinger {
+                    cursor: pointer;
                     margin: 10px 0;
                 }
             }

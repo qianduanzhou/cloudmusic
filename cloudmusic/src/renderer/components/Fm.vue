@@ -5,8 +5,8 @@
               <img :src="currentSong.picUrl" class="fmPic bgc"/>
               <img :src="insertPic.picUrl" class="fmPic small bgc"/>
               <div class="fmItemContainer spCenter">
-                  <i class="iconfont icon-xinaixin1" v-if="!isCollect" @click="collect"></i>
-                  <i class="iconfont icon-xinaixin" v-if="isCollect" style="color:red;"  @click="canCollect"></i>
+                  <i class="iconfont icon-xinaixin1" v-if="!isCollect()" @click="collect"></i>
+                  <i class="iconfont icon-xinaixin" v-if="isCollect()" style="color:red;"  @click="canCollect"></i>
                   <i class="iconfont icon-lajixiang"></i>
                   <i class="iconfont icon-xiayishou1" @click="next"></i>
                   <i class="iconfont icon-shenglvehao"></i>
@@ -37,9 +37,10 @@ import {run} from '../common/d3'
 import {createSong} from '../common/song'
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 import {bfLyc} from '../common/utils'
-
+import {lyricMixin,toSAS,collectMusic} from '../common/mixin'
 export default {
     name: 'fm',
+    mixins:[lyricMixin,toSAS,collectMusic],
     data() {
         return {
             cur: 0,
@@ -58,9 +59,6 @@ export default {
             'currentIndex',
             'audio'
         ]),
-        isCollect() {
-            return this.collectSong.includes(this.currentSong.mid)
-        },
         insertPic() {
             if(this.currentIndex > 0) {
                 return this.playList[this.currentIndex-1]
@@ -74,6 +72,8 @@ export default {
     },
     watch: {
         currentSong(newVal) {
+            this.id = parseInt(newVal.mid)
+            this.toWord()
             this.initLyric(newVal)
         }
     },
@@ -127,87 +127,6 @@ export default {
                     index:this.currentIndex + 1
                 })
             }
-        },
-        // 调到指定歌词
-        toWord() {
-            var _this = this
-            this.audio.addEventListener("timeupdate",function(e){
-                let currentTime = e.target.currentTime
-                for(let key in _this.lyc) {
-                    if(key == Math.floor(currentTime)) {
-                        if(_this.lyc[key] == "&#8197;") {
-                            continue;
-                        }
-                        _this.cur = key
-                    }
-                }
-            });
-        },
-        // 调到指定歌词的位置
-        toWordPosition() {
-            if(this.mousein) {
-                return 
-            }
-            this.$nextTick(() => {
-                let lis = this.$refs.wordContainer.children
-                setTimeout(() => {
-                    clearTimeout(this.timer)
-                    for(let i = 0; i < lis.length; i ++) {
-                        if(lis[i].classList[1] == "active" && lis[i-1]) {
-                            let prevOffsetTop = lis[i-1].offsetTop ? lis[i-1].offsetTop : '',
-                            nowOffsetTop = lis[i].offsetTop ? lis[i].offsetTop : '',
-                            diff = nowOffsetTop - prevOffsetTop,
-                            t = 0,
-                            d = 30,
-                            height = this.$refs.outsideContainer.offsetHeight
-                            run(this.$refs.outsideContainer,this.timer,t,prevOffsetTop,diff,d,height)
-                        }
-                    }
-                }, 50);
-            })
-        },
-        collect() {
-            let params = {
-                like:true,
-                id: this.currentSong.mid,
-                timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                collectList.push(this.currentSong.mid)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'收藏成功',
-                    center: true
-                });
-            })   
-        },
-        canCollect() {
-            let params =  {
-                    like:false,
-                    id: this.currentSong.mid,
-                    timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                let index = collectList.findIndex((item) => {
-                    return item == this.currentSong.mid
-                })
-                collectList.splice(index,1)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'取消收藏成功',
-                    center: true
-                });
-            })  
-        },
-        toSinger() {
-            this.$router.push(`/singerDetail/${this.currentSong.id}`)
-        },
-        toAlbum() {
-            this.$router.push(`/album/${this.currentSong.aid}`)
         },
         ...mapActions([
             'selectPlay',

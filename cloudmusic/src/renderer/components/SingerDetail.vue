@@ -333,6 +333,7 @@ export default {
     height: 590px;
     overflow: hidden;
     overflow-y: scroll;
+    overflow-x: hidden;
     border-left: 1px solid $borderColor;
     .singeheader {
         font-size: 13px;

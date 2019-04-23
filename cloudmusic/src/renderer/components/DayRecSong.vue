@@ -102,7 +102,7 @@ export default {
     height: 590px;
     background: #FAFAFA;
     overflow-y: scroll;
-
+    overflow-x: hidden;
     .drsHeader {
         width: 100%;
         height: 150px;

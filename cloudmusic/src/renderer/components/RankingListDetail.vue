@@ -117,10 +117,11 @@ import {mapGetters,mapActions,mapMutations} from 'vuex'
 import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
-
+import {collectPlayList} from '../common/mixin'
 import {Axios,toplistDetail,getSongListDetail,getComment,getSLCollecter,getSongUrl,collectSongList,sendComment} from '../common/api' 
 
 export default {
+    mixins:[collectPlayList],
     data() {
         return {
             description : [],
@@ -163,19 +164,12 @@ export default {
         this.init()
     },
     computed: {
-        ...mapGetters([
-           'collectSongList' 
-        ]),
         showCls() {
             return this.wordHide?'icon-down':'icon-shang'
         },
         dropCls() {
             return this.wordHide?'up':'drop'
         },
-        isCollect() {
-            let id = parseInt(this.$route.params.id)
-            return this.collectSongList.includes(id)
-        }
     },
     methods: {
         
@@ -284,45 +278,6 @@ export default {
                 })
             })
         },
-        collect() {
-            let params = {
-                t: 1,
-                id: this.id,
-                timestamp: (new Date()).getTime()   
-            }
-            Axios(collectSongList,params).then((res) => {
-                let collectList = this.collectSongList.slice(0)
-                collectList.push(this.id)
-                this.set_collectSongList(collectList)
-                this.collectNum += 1
-                this.$message({
-                    type:'success',
-                    message:'收藏成功',
-                    center: true
-                });
-            })    
-        },
-        canCollect() {
-            let params = {
-                t: 2,
-                id: this.id,
-                timestamp: (new Date()).getTime()
-            }
-            Axios(collectSongList,params).then((res) => {
-                let collectList = this.collectSongList.slice(0)
-                let index = collectList.findIndex((item) => {
-                    return item == this.id
-                })
-                collectList.splice(index,1)
-                this.set_collectSongList(collectList)
-                this.collectNum -= 1
-                this.$message({
-                    type:'success',
-                    message:'取消收藏成功',
-                    center: true
-                });
-            })      
-        },
         search() {
             let ret = []
             for(let i = 0;i < this.songList.length; i ++) {
@@ -371,10 +326,7 @@ export default {
         },
         ...mapActions([
             'selectPlay'
-        ]),
-        ...mapMutations({
-           set_collectSongList:'SET_COLLECTSONGLIST'
-        })
+        ])
     }
 }
 </script>
@@ -391,6 +343,7 @@ export default {
     top: 50px;
     overflow: hidden;
     overflow-y: scroll;
+    overflow-x: hidden;
     .SongListDetailHeader {
         display: flex;
         margin: 30px;

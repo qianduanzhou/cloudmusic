@@ -62,8 +62,8 @@
               <p class="name">{{currentSong.name}}</p>
               <p class="singer">{{currentSong.singer}}</p>
           </div>
-          <i class="love iconfont icon-xinaixin1"  v-if="!isCollect(currentSong.mid)" @click="collect(currentSong.mid)" :plain="true"></i>
-          <i class="love iconfont icon-xinaixin" style="color:red; right:0;" :plain="true" @click="canCollect(currentSong.mid)" v-if="isCollect(currentSong.mid)"></i>
+          <i class="love iconfont icon-xinaixin1"  v-if="!isCollect()" @click="collect" :plain="true"></i>
+          <i class="love iconfont icon-xinaixin" style="color:red; right:0;" :plain="true" @click="canCollect" v-if="isCollect()"></i>
           <i class="iconfont icon-fenxiang share"></i>
       </div>
   </div>
@@ -72,8 +72,9 @@
 <script>
 import {mapGetters,mapMutations} from 'vuex'
 import {Axios,getUserSongList,likeMusic} from '../common/api'
-
+import {collectMusic} from '../common/mixin'
 export default {
+    mixins:[collectMusic],
     computed: {
         ...mapGetters([
             'userName',
@@ -95,6 +96,9 @@ export default {
         userId() {
             this.uid = this.userId
             this.initCreate()
+        },
+        currentSong() {
+            this.id = parseInt(this.currentSong.mid)
         }
     },
     updated() {
@@ -105,8 +109,8 @@ export default {
         }
     },
     methods: {
-        isCollect(id) {
-            return this.collectSong.includes(id)
+        isCollect() {
+            return this.collectSong.includes(this.id)
         },
         toSongDetail() {
             this.$router.push({
@@ -130,46 +134,6 @@ export default {
                 this.createList = this.createList.slice(1,this.createList.length)
             })
         },
-        collect(id) {
-            let params = {
-                    like:true,
-                    id: id,
-                    timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                collectList.push(id)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'喜欢该音乐成功',
-                    center: true
-                });
-            })        
-        },
-        canCollect(id) {
-            let params = {
-                like:false,
-                id: id,
-                timestamp: (new Date()).getTime()
-            }
-            Axios(likeMusic,params).then((res) => {
-                let collectList = this.collectSong.slice(0)
-                let index = collectList.findIndex((item) => {
-                    return item == id
-                })
-                collectList.splice(index,1)
-                this.set_collectSong(collectList)
-                this.$message({
-                    type:'success',
-                    message:'取消喜欢音乐成功',
-                    center: true
-                });
-            })       
-        },
-        ...mapMutations({
-            set_collectSong:'SET_COLLECTSONG'
-        })
     }
 }
 </script>

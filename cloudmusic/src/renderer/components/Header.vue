@@ -10,6 +10,7 @@
           @focus="inithotSearch"  v-model="keywords" @keyup="adviseSearch"  @keyup.enter="searchAll"
           >
           <i class="iconfont icon-sousuo" style="-webkit-app-region: no-drag;" @click="searchAll"></i>
+          <i class="iconfont icon-code" style="-webkit-app-region: no-drag;" v-if="keywords" @click="keywords = ''"></i>
       </div>
       <div class="headerNav alignCenter" style="-webkit-app-region: drag;">
           <i class="iconfont icon-geren" style="-webkit-app-region: no-drag;" v-show="!userName"></i>
@@ -683,7 +684,8 @@ export default {
                     outline: none;
                 }
             }
-            .icon-sousuo {
+            .icon-sousuo,.icon-code {
+                cursor: pointer;
                 position: relative;
                 left: -30px;
                 font-size: 14px;
@@ -692,6 +694,9 @@ export default {
                     color: white;
                     transition: color .2s ease-in;
                 }
+            }
+            .icon-code {
+                left: -70px;
             }
         }
         .headerNav {

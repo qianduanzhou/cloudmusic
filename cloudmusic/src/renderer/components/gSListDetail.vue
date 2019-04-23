@@ -118,6 +118,7 @@ export default {
     background: #FAFAFA;
     top: 100px;
     overflow-y: scroll;
+    overflow-x: hidden;
     border-left: 1px solid $borderColor;
     .gsdHeader {
         border-bottom: 1px solid $borderColor;

@@ -13,8 +13,8 @@
           <ul class="songs">
               <li class="songDetail left alignCenter" v-for="(item,index) in Songsc"
               :key="index" @dblclick="playsong(index)" :class="{'songActive' :currentSong.name == item.name}">
-                  <span class="index" v-if="currentSong.name != item.name">{{index+1 | addZero}}</span>
-                  <span class="index iconfont icon-horn-copy" v-if="currentSong.name == item.name"></span>
+                  <span class="index" v-if="currentSong.mid != item.mid">{{index+1 | addZero}}</span>
+                  <span class="index iconfont icon-horn-copy" v-if="currentSong.mid == item.mid"></span>
                   <i class="love iconfont icon-xinaixin1"  v-if="types!=3 && types!=4 && !isCollect(item.mid)" @click="collect(item.mid)" :plain="true"></i>
                   <i class="love iconfont icon-xinaixin" style="color:red;" :plain="true" @click="canCollect(item.mid)" v-if="types!=3 && types!=4 && isCollect(item.mid)"></i>
                   <i class="down iconfont icon-xiazai" v-if="types!=3 && types!=4"></i>
@@ -42,7 +42,7 @@
 
 <script>
 import { create } from 'domain';
-import {Axios,getSongUrl,likeMusic} from '../common/api'
+import {Axios,getSongUrl,likeMusic,getAlbumDetail} from '../common/api'
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 export default {
     props: {
@@ -114,7 +114,7 @@ export default {
             }else {
                 if(!this.Songsc[index].picUrl) {
                     let aid = this.Songsc[index].aid
-                    Axios(getSongUrl,{
+                    Axios(getAlbumDetail,{
                         id: aid
                     }).then((res) => {
                         let picUrl = res.album.picUrl
