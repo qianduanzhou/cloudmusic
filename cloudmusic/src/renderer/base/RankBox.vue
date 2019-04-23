@@ -21,7 +21,7 @@
             <p class="rkSinger" style="text-align:left;" @click="toSinger(item1)">{{item1.name}}</p>
           </li>
         </ul>
-        <p class="rkAll">
+        <p class="rkAll" @click="$router.push('/singerrank')">
           查看全部>
         </p>
     </div> 
@@ -99,7 +99,7 @@ export default {
     },
     toSinger(song) {
       let id = song.id
-      this.$router.push(`/find/singer/${id}`)
+      this.$router.push(`/singerDetail/${id}`)
     },
     ...mapActions([
       'insertSong'

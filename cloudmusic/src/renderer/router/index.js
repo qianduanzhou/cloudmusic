@@ -16,7 +16,16 @@ import MyCreate from '../components/MyCreate'
 import AlbumDetail from '../components/AlbumDetail'
 import SearchResult from '../components/SearchResult'
 import Fm from '../components/Fm'
+import SingerRank from '../components/SingerRank'
 
+
+Router.prototype.goBack = function () {
+  this.isBack = true
+  window.history.go(-1)
+  setTimeout(() => {
+    this.isBack = false
+  }, 500);
+}
 Vue.use(Router)
 export default new Router({
   routes: [
@@ -44,22 +53,10 @@ export default new Router({
         {
           path:'singer',
           component:Singer,
-          children: [
-            {
-              path:':id',
-              component:SingerDetail
-            }
-          ]
         },
         {
           path:'songlist',
-          component:SongList,
-          children: [
-            {
-              path:':id',
-              component:SongListDetail
-            },
-          ]
+          component:SongList
         },
         {
           path:'good',
@@ -74,9 +71,21 @@ export default new Router({
               component:RankingListDetail
             },
           ]
-        }
+        },
+
       ]
     },
+    {
+      name:'singerDetail',
+      path:'/singerDetail/:id',
+      component:SingerDetail
+    },
+    {
+      name:'songListDetail',
+      path:'/songListDetail/:id',
+      component:SongListDetail
+    },
+
     {
       name:'songDetail',
       path:'/songDetail',
@@ -85,7 +94,7 @@ export default new Router({
     { 
       name:'create',
       path: "/create/:id",
-      component:SongListDetail
+      component:SongListDetail,
     },
     {
       name:'myCreate',
@@ -96,6 +105,11 @@ export default new Router({
       name:'album',
       path:'/album/:id',
       component:AlbumDetail
+    },
+    {
+      name:'singerRank',
+      path:'/singerrank',
+      component:SingerRank
     },
     {
       name:'searchResult',

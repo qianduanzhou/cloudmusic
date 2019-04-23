@@ -151,11 +151,7 @@ export default {
         ImaList
     },
     created() {
-        this.id = parseInt(this.$route.params.id)
-        this.initSongListDetail()
-        this.initCommentList()
-        this.initCollecter()
-        this.moreCollecter()
+        this.initAll()
     },
     mounted() {
         this.init()
@@ -174,6 +170,11 @@ export default {
             return this.collectSongList.includes(this.id)
         }
     },
+    watch:{
+        '$route'(to,from) {
+            this.initAll()
+        }
+    },
     methods: {
         
         init() {
@@ -183,11 +184,18 @@ export default {
                 initPage(outside,innerside)
             }, 500); 
         },
-        initSongListDetail() {
-            let params = {
+        initAll() {
+            this.id = parseInt(this.$route.params.id)
+            this.params = {
                 id: this.id
             }
-            Axios(getSongListDetail,params).then((res) => {
+            this.initSongListDetail()
+            this.initCommentList()
+            this.initCollecter()
+            this.moreCollecter()
+        },
+        initSongListDetail() {
+            Axios(getSongListDetail,this.params).then((res) => {
                 this.detail = res.playlist
                 this.collectNum = res.playlist.subscribedCount
                 let des = res.playlist.description
@@ -205,10 +213,7 @@ export default {
             })
         },
         initCommentList() {
-            let params = {
-                id: this.id
-            }
-            Axios(getComment,params).then((res) => {
+            Axios(getComment,this.params).then((res) => {
                 this.commentList = res.comments
                 this.total = res.total
             })
@@ -383,7 +388,7 @@ export default {
     left: 200px;
     top: 50px;
     width: 880px;
-    height:570px;
+    height:590px;
     background: #FAFAFA;
     overflow: hidden;
     overflow-y: scroll;

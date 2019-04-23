@@ -1,5 +1,4 @@
 <template>
-  <transition name="big" mode="out-in">
   <div class="songDetail scrollStyle" ref="container" :key="111">
       <section class="songContainer allCenter">
           <div class="bg"></div>
@@ -30,9 +29,9 @@
                           <p class="mv">极高音质</p>
                       </div> 
                       <div class="itemContainer alignCenter">
-                          <div class="item alignCenter"><p class="titles">专辑:</p><b class="titleDetail">{{currentSong.album}}</b></div>
-                          <div class="item alignCenter"><p class="titles">歌手:</p><b class="titleDetail">{{currentSong.singer}}</b></div>
-                          <div class="item alignCenter"><p class="titles">来源:</p><b class="titleDetail">{{currentSong.singer}}</b></div>                      
+                          <div class="item alignCenter" @click="toAlbum"><p class="titles">专辑:</p><b class="titleDetail">{{currentSong.album}}</b></div>
+                          <div class="item alignCenter" @click="toSinger"><p class="titles">歌手:</p><b class="titleDetail">{{currentSong.singer}}</b></div>
+                          <div class="item alignCenter"  @click="toSinger"><p class="titles">来源:</p><b class="titleDetail">{{currentSong.singer}}</b></div>                      
                       </div>
                   </header>
                   <section class="wordoutside scrollStyle" ref="outsideContainer" @mouseenter="mousein = true" @mouseleave="mousein = false">
@@ -82,7 +81,7 @@
               <header class="comHeader alignCenter">
                   <p class="title">包含这首歌的歌单</p>
               </header>
-              <same :list="songList" v-slot="items" :songlist="true">播放：{{items.item.playCount | wan}}万</same>
+              <same :list="songList" v-slot="items" :songlist="true" @getData="toSongList">播放：{{items.item.playCount | wan}}万</same>
               <header class="comHeader alignCenter"  style="margin-top:50px;">
                   <p class="title">相似歌曲</p>
               </header>
@@ -104,7 +103,6 @@
       </section>
       <div style="height:120px"></div>
   </div>
-  </transition>
 </template>
 
 <script>
@@ -267,7 +265,7 @@ export default {
                 let lis = this.$refs.wordContainer.children
                 setTimeout(() => {
                     for(let i = 0; i < lis.length; i ++) {
-                        if(lis[i].classList[1] == "active") {
+                        if(lis[i].classList[1] == "active" && lis[i-1]) {
                             let prevOffsetTop = lis[i-1].offsetTop ? lis[i-1].offsetTop : '',
                             nowOffsetTop = lis[i].offsetTop ? lis[i].offsetTop : '',
                             diff = nowOffsetTop - prevOffsetTop,
@@ -291,6 +289,15 @@ export default {
                 this.$refs.container.scrollTop = this.$refs.comment.offsetTop - 10
             })
         },
+        toSongList(data) {
+            this.$router.push(`/songListDetail/${data.id}`)
+        },
+        toSinger() {
+            this.$router.push(`/singerDetail/${this.currentSong.id}`)
+        },
+        toAlbum() {
+            this.$router.push(`/album/${this.currentSong.aid}`)
+        },
         ...mapMutations({
             set_collectSong:'SET_COLLECTSONG'
         })
@@ -300,34 +307,6 @@ export default {
 
 <style lang='scss' scoped>
 @import '../assets/css/base.scss';
-.big-enter-active {
-  animation: big-in .2s;
-}
-.big-leave-active {
-  animation:big-in .2s reverse;
-}
-@keyframes big-in {
-    0% {
-    transform: scale(0);
-    transform-origin: 0 100%;
-  }
-  25% {
-    transform: scale(0.25);
-    transform-origin: 0 100%;
-  }
-  50% {
-    transform: scale(0.5);
-    transform-origin: 0 100%;
-  }
-  75% {
-    transform: scale(0.75);
-    transform-origin: 0 100%;
-  }
-  100% {
-    transform: scale(1);
-    transform-origin: 0 100%;
-  }
-}
 .songDetail {
     position: fixed;
     top: 50px;

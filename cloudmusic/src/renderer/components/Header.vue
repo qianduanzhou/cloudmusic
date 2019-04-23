@@ -34,7 +34,7 @@
         width="30%"
         :before-close="handleClose">
         <span class="iphone">手机号：</span><input type="text" class="username" v-model="username" placeholder="请输入手机号"> <br>
-        <span class="pass">密&nbsp;&nbsp;&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keyup.enter="login">
+        <span class="pass">密&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keyup.enter="login">
         <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="login">确 定</el-button>
@@ -188,6 +188,7 @@ export default {
         ...mapGetters([
             'userName',
             'nickName',
+            'userId',
             'avatarUrl',
             'collectSongList',
             'collectSinger',
@@ -216,7 +217,7 @@ export default {
         },
         // 返回上一层
         prev() {  
-            this.$router.go(-1)
+            this.$router.goBack()
         },
         // 返回下一层
         next() { 
@@ -256,11 +257,7 @@ export default {
                 this.setAvatarUrl(res.profile.avatarUrl);
                 this.username = '';
                 this.password = '';
-                this.initCollectSongList()
-                this.initCollectSingerList()
-                this.initLikeMusic()
-                this.initHistory()
-                this.initCollectAlbum()
+                this._initCollects()
             })
         },
 
@@ -281,20 +278,14 @@ export default {
                 this.setNickName(res.profile.nickname)
                 this.setUserId(res.profile.userId)
                 this.setAvatarUrl(res.profile.avatarUrl)
-
                 localStorage.setItem("username", this.username)
                 localStorage.setItem("nickName", this.nickName)
                 localStorage.setItem("avatarUrl", this.avatarUrl)
                 localStorage.setItem("password", this.password)
                 localStorage.setItem("userId", res.profile.userId)
-
                 this.username = ''
                 this.password = ''
-
-                this.initCollectSongList()
-                this.initCollectSingerList()
-                this.initLikeMusic()
-                this.initHistory()
+                this._initCollects()
             }).catch(()=>{
                 alert('手机号或者密码错误')
                 this.username = ''
@@ -368,14 +359,6 @@ export default {
                 })
                 this._normalizeSongs(list)
             })
-        },
-        _normalizeSongs(list) {
-            let ret = []
-            for(let i = 0; i < list.length; i ++) {
-                ret.push(createSong(list[i]))
-            }
-            this.setPlayHistoryList(ret)
-            return ret
         },
         // 展示下拉框
         showDrap() {
@@ -459,11 +442,11 @@ export default {
             })
         },
         toSinger(id) {
-            this.$router.push(`/find/singer/${id}`)
+            this.$router.push(`/singerDetail/${id}`)
             this.adviseDrap = false
         },
         toSongList(id) {
-            this.$router.push(`/find/songlist/${id}`)
+            this.$router.push(`/songListDetail/${id}`)
             this.adviseDrap = false
         },
         toAlbum(id) {
@@ -474,6 +457,22 @@ export default {
             this.$router.push(`/search/${this.keywords}`)
             this.adviseDrap = false
             this.searchDrap = false
+        },
+        _normalizeSongs(list) {
+            let ret = []
+            for(let i = 0; i < list.length; i ++) {
+                ret.push(createSong(list[i]))
+            }
+            this.setPlayHistoryList(ret)
+            return ret
+        },
+        // 初始化收藏类函数
+        _initCollects() {
+            this.initCollectSongList()
+            this.initCollectSingerList()
+            this.initLikeMusic()
+            this.initHistory()
+            this.initCollectAlbum()
         },
         ...mapMutations({
             setUserName: 'SET_USERNAME',

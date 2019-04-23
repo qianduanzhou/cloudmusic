@@ -98,7 +98,7 @@ export default {
             })
         },
         toSongList(id) {
-            this.$router.push(`/find/songlist/${id}`)
+            this.$router.push(`/songlistDetail/${id}`)
         }
     }
 }
@@ -111,7 +111,7 @@ export default {
     position: fixed;
     z-index: 99;
     width: 880px;
-    height: 570px;
+    height: 590px;
     left: 200px;
     box-sizing: border-box;
     padding: 30px 25px;

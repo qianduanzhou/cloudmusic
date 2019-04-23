@@ -24,14 +24,14 @@
     </div>
     <img-list :list="singList" :listWidth="15" :isSinger="true" ref="list" @getData="getSongList">
       <template v-slot:specail>
-        <li style="width:15%;" ><img src="../../../static/singer.jpg"/><p style="font-size:13px;">歌手排行榜</p></li>
+        <li style="width:15%;" @click="toSingerRank"><img src="../../../static/singer.jpg"/><p style="font-size:13px;">歌手排行榜</p></li>
       </template>
       <template v-slot:img="imgs">
               <img v-lazy="imgs.imgs.picUrl"/>
       </template>
     </img-list>
     <div v-loading="loading" style="height:100px;"></div>
-    <router-view/>
+    <router-view :key="Math.random()"/>
   </div>
 </template>
 
@@ -166,7 +166,12 @@ export default {
     getSongList(data) {
       let id = data.id
       this.$router.push({
-        path:`/find/singer/${id}`
+        path:`/singerDetail/${id}`
+      })
+    },
+    toSingerRank() {
+      this.$router.push({
+        path:`/singerRank`
       })
     }
   }

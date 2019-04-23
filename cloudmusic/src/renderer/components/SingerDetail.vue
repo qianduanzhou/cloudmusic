@@ -131,30 +131,47 @@ export default {
             return this.collectSinger.includes(id)
         }
     },
+    created() {
+        this.id = parseInt(this.$route.params.id)
+        this.initAll()
+    },
     components: {
         Album,
         ImgList
     },
-    created() {
-        this.id = parseInt(this.$route.params.id)
-        this.initSingerDetail()
-        this.initAlbum()
-        this.initMv()
-        this.initDesc()
-        this.initSameSinger()
+    // watch: {
+    //     '$route'(to,from) {
+    //         if(to.name=="singerDetail") {
+    //                         console.log('watch')
+    //             this.id = parseInt(this.$route.params.id)
+    //             this.initAll()
+    //         }
+    //     }
+    // },
+    beforeRouteUpdate(to,from,next) {
+        this.id = parseInt(to.params.id)
+        this.initAll()
+        next()
     },
     mounted() {
         this.init()
         this.moreMv()
     },
+    
     methods: {
         init() {
-
             setTimeout(() => {
                 let outside = document.documentElement,
                 innerside = this.$refs.singerDetail
                 initPage(outside,innerside)
             }, 500); 
+        },
+        initAll() {
+            this.initSingerDetail()
+            this.initAlbum()
+            this.initMv()
+            this.initDesc()
+            this.initSameSinger()
         },
         initSingerDetail (){
             let params = {
@@ -252,7 +269,7 @@ export default {
         },
         toSinger(data) {
             let id = data.id
-            this.$router.push(`/find/singer/${id}`)  
+            this.$router.push(`/singerDetail/${id}`)
         },
         collect() {
             let params = {
@@ -313,11 +330,12 @@ export default {
     top: 50px;
     left: 200px;
     width: 880px;
-    height: 570px;
+    height: 590px;
     overflow: hidden;
     overflow-y: scroll;
     border-left: 1px solid $borderColor;
     .singeheader {
+        font-size: 13px;
         margin: 33px;
         .pic {
             width: 200px;

@@ -14,12 +14,12 @@
           <span>（{{albumList.length}}）</span>
         </div>
         <main class="mcAblumContainer">
-          <div class="mcAlbumItem alignCenter"  v-for="item in albumList" :key="item.id" @click="toAlbum(item.id)">
-            <img v-lazy="item.picUrl" class="mcAlbumPic spc"/>
-            <p class="mcAlbumName">{{item.name}}</p>
-            <p class="mcAlbumSinger">{{item.artists[0].name}}</p>
-            <span>{{item.size}}首</span>
-          </div>
+          <smallList :list="albumList" v-slot="item">
+            <img v-lazy="item.item.picUrl" class="mcAlbumPic spc" @click.stop="toAlbum(item.item.id)"/>
+            <p class="mcAlbumName"  @click.stop="toAlbum(item.item.id)">{{item.item.name}}</p>
+            <p class="mcAlbumSinger" @click.stop="toSingera(item.item.artists[0].id)">{{item.item.artists[0].name}}</p>
+            <span>{{item.item.size}}首</span>
+          </smallList>
         </main>
       </div>
       <div v-if="mcCur == 'singer'">
@@ -28,12 +28,12 @@
           <span>（{{singerList.length}}）</span>
         </div>
         <main class="mcAblumContainer">
-          <div class="mcAlbumItem alignCenter" v-for="item in singerList" :key="item.id" @click="toSinger(item.id)">
-            <img v-lazy="item.img1v1Url" class="mcAlbumPic spc"/>
-            <p class="mcAlbumName">{{item.name}}</p>
-            <p class="mcAlbumSinger">专辑：{{item.albumSize}}</p>
-            <span>MV：{{item.mvSize}}</span>
-          </div>
+          <smallList :list="singerList" v-slot="item">
+            <img v-lazy="item.item.img1v1Url" class="mcAlbumPic spc" @click="toSinger(item.item.id)"/>
+            <p class="mcAlbumName" @click="toSinger(item.item.id)">{{item.item.name}}</p>
+            <p class="mcAlbumSinger">专辑：{{item.item.albumSize}}</p>
+            <span>MV：{{item.item.mvSize}}</span>
+          </smallList>
         </main>
       </div>
       
@@ -43,7 +43,7 @@
 <script>
 import axios from 'axios'
 import {Axios,getUserCollectSinger,getCollectAlbum} from '../common/api'
-
+import SmallList from '../base/SmallList'
 export default {
   data() {
     return {
@@ -56,6 +56,9 @@ export default {
     this.uid = localStorage.getItem('userId')
     this.initSinger()
     this.initAlbum()
+  },
+  components: {
+    SmallList
   },
   methods: {
     initSinger() {
@@ -73,9 +76,12 @@ export default {
       })
     },
     toSinger(id) {
-      this.$router.push(`/find/singer/${id}`)
+      this.$router.push(`/singerDetail/${id}`)
     },
-    toAlbum(id) {
+    toSingera(id) {
+      this.$router.push(`/singerDetail/${id}`)
+    },
+    toAlbum(id,item) {
       this.$router.push(`/album/${id}`)
     }
   }
@@ -118,9 +124,10 @@ export default {
   }
 }
 .mcAblumContainer {
-  font-size: 13px;
-  color: #666666;
+  
   .mcAlbumItem {
+    font-size: 13px;
+    color: #666666;
     padding: 10px 30px;
     &:hover {
       background: #EBECED;

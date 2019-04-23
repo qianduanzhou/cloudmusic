@@ -186,7 +186,7 @@ export default {
         toSonglistDetail(data) {
             let id = data.id
             this.$router.push({
-                path: `/find/songlist/${id}`,    
+                path: `/songlistDetail/${id}`,    
             })
         },
         toGSLDetil() {

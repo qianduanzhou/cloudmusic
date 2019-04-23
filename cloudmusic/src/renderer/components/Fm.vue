@@ -18,8 +18,8 @@
                    <span>标准音质</span>
               </div>
               
-              <p class="detail">专辑：<b class="wordNowrap">{{currentSong.album}}</b></p>
-              <p class="detail">歌手：<b class="wordNowrap">{{currentSong.singer}}</b></p>
+              <p class="detail" @click="toAlbum">专辑：<b class="wordNowrap">{{currentSong.album}}</b></p>
+              <p class="detail" @click="toSinger">歌手：<b class="wordNowrap">{{currentSong.singer}}</b></p>
               <section class="wordoutside scrollStyle" ref="outsideContainer" @mouseenter="mousein = true" @mouseleave="mousein = false">
                 <ul class="wordContainer" ref="wordContainer">
                   <li v-for="(item,index) in lyc" :key="index" class="wordItem" :class="{'active':cur == index}" v-html="item"> 
@@ -39,6 +39,7 @@ import {mapGetters,mapMutations,mapActions} from 'vuex'
 import {bfLyc} from '../common/utils'
 
 export default {
+    name: 'fm',
     data() {
         return {
             cur: 0,
@@ -152,7 +153,7 @@ export default {
                 setTimeout(() => {
                     clearTimeout(this.timer)
                     for(let i = 0; i < lis.length; i ++) {
-                        if(lis[i].classList[1] == "active" && lis[i-1].offsetTop) {
+                        if(lis[i].classList[1] == "active" && lis[i-1]) {
                             let prevOffsetTop = lis[i-1].offsetTop ? lis[i-1].offsetTop : '',
                             nowOffsetTop = lis[i].offsetTop ? lis[i].offsetTop : '',
                             diff = nowOffsetTop - prevOffsetTop,
@@ -201,6 +202,12 @@ export default {
                     center: true
                 });
             })  
+        },
+        toSinger() {
+            this.$router.push(`/singerDetail/${this.currentSong.id}`)
+        },
+        toAlbum() {
+            this.$router.push(`/album/${this.currentSong.aid}`)
         },
         ...mapActions([
             'selectPlay',
@@ -274,6 +281,7 @@ export default {
                     padding: 1px;
                 }
                 .detail {
+                    cursor: pointer;
                     display: inline-block;
                     width: 140px;
                     font-size: 12px;

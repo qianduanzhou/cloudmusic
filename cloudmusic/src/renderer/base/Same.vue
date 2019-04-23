@@ -1,6 +1,6 @@
 <template>
   <ul class="same">
-      <li class="alignCenter sameitem" v-for="item in list" :key="item.id">
+      <li class="alignCenter sameitem" v-for="item in list" :key="item.id" @click="getData(item)">
           <div class="samePic bgc" :style="{backgroundImage:`url(${item.coverImgUrl})`}" v-if="songlist"></div>
           <div class="samePic bgc" :style="{backgroundImage:`url(${item.album.blurPicUrl})`}" v-if="song"></div>
           <div class="sameDetail">
@@ -27,6 +27,11 @@ export default {
         songlist:{
             type:Boolean,
             default:false
+        }
+    },
+    methods: {
+        getData(data) {
+            this.$emit('getData',data)
         }
     }
 }

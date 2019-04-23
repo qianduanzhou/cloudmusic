@@ -116,12 +116,23 @@ export default {
   },
   created() {
     this.keywords = this.$route.params.keywords
-    this.initSong()
-    this.initSinger()
-    this.initAlbum()
-    this.initPlayList()
+    this.initAll()
+  },
+  watch: {
+    '$route'(to,from) {
+      if(to.name === 'searchResult') {
+        this.keywords = this.$route.params.keywords
+        this.initAll()
+      }
+    }
   },
   methods: {
+    initAll() {
+        this.initSong()
+        this.initSinger()
+        this.initAlbum()
+        this.initPlayList()
+    },
     initSong() {
       Axios(getSearchContent,{
         keywords:this.keywords,
@@ -214,13 +225,13 @@ export default {
       })
     },
     toSinger(id) {
-      this.$router.push(`/find/singer/${id}`)
+      this.$router.push(`/singerDetail/${id}`)
     },
     toAlbum(id) {
       this.$router.push(`/album/${id}`)
     },
     toSongList(id) {
-      this.$router.push(`/find/songlist/${id}`)
+      this.$router.push(`/songListDetail/${id}`)
     },
     _normalizeSongList(list) {
       let ret = []

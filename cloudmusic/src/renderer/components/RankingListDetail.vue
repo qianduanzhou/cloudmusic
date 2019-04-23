@@ -386,7 +386,7 @@ export default {
     z-index: 99;
     left: 200px;
     width: 880px;
-    height: 570px;
+    height: 590px;
     background: #FAFAFA;
     top: 50px;
     overflow: hidden;

@@ -25,10 +25,10 @@
                       <i class="sq iconfont icon-sq"></i>
                       <i class="play iconfont icon-mv"></i>
                   </div>
-                  <div class="aSinger"  v-if="types === 1 || types === 3 || types === 4">
+                  <div class="aSinger"  v-if="types === 1 || types === 3 || types === 4" @click.stop="toSinger(item.id)">
                       {{item.singer}}
                   </div>
-                  <div class="aAblum" v-if="types === 1">
+                  <div class="aAblum" v-if="types === 1" @click.stop="toAlbum(item.aid)">
                       {{item.album}}
                   </div>
                   <span class="duration" v-if="types === 0 || types === 3 || types === 4 || types === 5">{{item.duration | time}}</span>
@@ -170,6 +170,12 @@ export default {
                 });
             })         
         },
+        toSinger(id) {
+            this.$router.push(`/singerDetail/${id}`)
+        },
+        toAlbum(id) {
+            this.$router.push(`/album/${id}`)
+        },
         ...mapActions([
             'selectPlay',
             'insertSong'
@@ -282,12 +288,14 @@ export default {
                         }
                     }
                     .aSinger {
+                        cursor: pointer;
                         width: 21%;
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
                     }
                     .aAblum {
+                        cursor: pointer;
                         margin-left: 10px;
                         overflow: hidden;
                         white-space: nowrap;

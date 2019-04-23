@@ -97,6 +97,9 @@ export const getDRSong = "/recommend/songs"
 export const toplist = "/toplist"
 //  获取排行榜内容
 export const toplistDetail = "/top/list"
+//  获取排行榜歌手榜
+export const singerRank = "/toplist/artist"
+
 
 
 //  获取专辑详情

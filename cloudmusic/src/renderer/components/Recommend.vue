@@ -120,14 +120,14 @@ export default {
             })
         },
         toSongListDetail(data) {
-            this.$router.push(`/find/songList/${data.id}`)
+            this.$router.push(`/songListDetail/${data.id}`)
         },
         moreSongList() {
             this.$router.push('/find/songList')
         },
         toSinger(data) {
             let id = data.song.artists[0].id
-            this.$router.push(`/find/singer/${id}`)
+            this.$router.push(`/singerDetail/${id}`)
         },
         playMusic(data){
             let song = data.song

@@ -28,7 +28,3 @@ export function createSong(musicData) {
     let albumPublishTime = musicData.al ?  musicData.al.publishTime : musicData.album.publishTime
     return new Song(id,mid,aid,singer,name,album,duration,picUrl,url,alia,albumPublishTime)
 }
-
-// export function createSong(id,mid,singer,name,album,duration,picUrl,url,alia,albumPublishTime,aid) {
-//     return new Song(id,mid,singer,name,album,duration,picUrl,url,alia,albumPublishTime,aid)
-// }

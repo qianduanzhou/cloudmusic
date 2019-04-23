@@ -22,7 +22,9 @@
               </li> -->
           </ul>
       </nav>
-      <router-view :key="Math.random()" :root="root"/>
+      <transition :name="transitionName" mode="out-in"> 
+        <router-view :key="Math.random()" :root="root"/>
+      </transition>
   </div>
 </template>
 
@@ -36,6 +38,16 @@ export default {
         ])
     },
     mounted() {
+    },
+    watch: {
+      '$route' (to, from) {
+    　　　　let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
+    　　　　if(isBack) {
+    　　　　　　this.transitionName = 'slide-right'
+    　　　　} else {
+    　　　　    this.transitionName = 'slide-left'
+    　　　　 }
+    　　}
     },
     methods: {
         ...mapMutations({
@@ -52,6 +64,17 @@ export default {
     position: relative;
     box-sizing: border-box;
     padding: 0 30px 0 30px;
+    .slide-left-enter, .slide-right-leave-to,{
+      opacity: 0;
+      transform: translate(-100%, 0);
+    }
+    .slide-left-enter-active,.slide-left-leave-active,.slide-right-enter-active,.slide-right-leave-active{
+      transition: all .3s ease-in;
+    }
+    .slide-right-enter,.slide-left-leave-to {
+      opacity: 0;
+      transform: translate(100%, 0);
+    }
     .navContainer {
         border-bottom: 1px solid $borderColor;
         li {

@@ -99,7 +99,7 @@ export default {
     top: 50px;
     left: 200px;
     width: 880px;
-    height: 570px;
+    height: 590px;
     background: #FAFAFA;
     overflow-y: scroll;
 

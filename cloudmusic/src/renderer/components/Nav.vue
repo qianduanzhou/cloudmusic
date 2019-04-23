@@ -91,9 +91,11 @@ export default {
             collectList:[]
         }
     },
-    created() {
-        this.uid = parseInt(localStorage.getItem('userId'))
-        this.initCreate()
+    watch: {
+        userId() {
+            this.uid = this.userId
+            this.initCreate()
+        }
     },
     updated() {
         if(this.$refs.playWindow) {
