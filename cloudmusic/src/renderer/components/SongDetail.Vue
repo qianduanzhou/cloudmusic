@@ -1,14 +1,13 @@
 <template>
   <div class="songDetail scrollStyle" ref="container" :key="111">
       <section class="songContainer allCenter">
-          <div class="bg"></div>
+          <div class="bg" :style="{backgroundImage:`url(${currentSong.picUrl})`}"></div>
           <div class="song alignCenter">
               <div class="playDetail">
                   <header class="zheng" :class="{'playActive':playing}">
                   </header>
                   <div class="main">
-                      <div class="singPic" :style="{backgroundImage:`url(${currentSong.picUrl})`}" :class="playClass">
-                      </div>
+                      <img class="singPic" v-lazy="currentSong.picUrl" :class="playClass" :key="currentSong.mid"/>
                   </div>
                   <footer class="songControl allCenter">
                       <div class="item allCenter" @click="collect" v-if="!isCollect()">
@@ -116,11 +115,11 @@ import Comment from '../base/comment'
 import Same from '../base/Same'
 import {Axios,getLyric,getSongComment,getSameSongList,getSameSong,getSamePeople,
 likeMusic} from '../common/api'
-import {lyricMixin,toSAS,collectMusic} from '../common/mixin'
+import {lyricMixin,toSAS,collectMusic,setLoading} from '../common/mixin'
 
 
 export default {
-    mixins:[lyricMixin,toSAS,collectMusic],
+    mixins:[lyricMixin,toSAS,collectMusic,setLoading],
     data() {
         return {
             deg: 0,
@@ -145,18 +144,23 @@ export default {
     watch: {
         currentSong(newVal) {
             this.id = parseInt(this.currentSong.mid)
+            this.sameParams = {
+                id:this.id
+            }
             this.initAll()
         }
     },
     created() {
+        this.id = parseInt(this.currentSong.mid)
         this.sameParams = {
             id:this.id
         }
-        this.toWord()
         this.initAll()
     },
     methods: {
         initAll() {
+            this.set_loading(false)
+            this.toWord()
             this.initLyric()
             this.initComment()
             this.initSameSongList()
@@ -264,10 +268,10 @@ export default {
                     border: 8px solid #8C8C8D;
                     margin-top: 60px;
                     .singPic {
+                        background-color:#fff;
                         width: 210px;
                         height: 210px;
                         border-radius: 50%;
-                        background: red;
                         position: absolute;
                         top: 50px;
                         left: 50px;
@@ -365,12 +369,13 @@ export default {
                         height: 320px;
                         .wordItem {
                             padding: 8px 0;
-                            color:#3E3F3F;
+                            color:rgba(255,255,255,0.5);
                             margin-bottom: 15px;
                             font-size: 14px;
                         }
                         .active {
-                            color:rgba(255,255,255,0.8);
+                            color:#fff;
+                            font-size:16px;
                         }
                     }
                 }

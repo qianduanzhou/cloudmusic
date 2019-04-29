@@ -1,7 +1,7 @@
 <template>
   <div class="fm">
       <section class="fmContainer alignCenter">
-          <div class="fmLeft">
+          <div class="fmLeft"> 
               <img :src="currentSong.picUrl" class="fmPic bgc"/>
               <img :src="insertPic.picUrl" class="fmPic small bgc"/>
               <div class="fmItemContainer spCenter">
@@ -37,7 +37,7 @@ import {run} from '../common/d3'
 import {createSong} from '../common/song'
 import {mapGetters,mapMutations,mapActions} from 'vuex'
 import {bfLyc} from '../common/utils'
-import {lyricMixin,toSAS,collectMusic} from '../common/mixin'
+import {lyricMixin,toSAS,collectMusic,setLoading} from '../common/mixin'
 export default {
     name: 'fm',
     mixins:[lyricMixin,toSAS,collectMusic],
@@ -94,6 +94,7 @@ export default {
                        list:this.fmList,
                        index:this.currentIndex+1
                     })
+                    this.set_loading(false)
                 })
             })
         },
@@ -227,6 +228,7 @@ export default {
                         }
                         .active {
                             color:#0C4DAF;
+                            font-size:15px;
                         }
                     }
                 }

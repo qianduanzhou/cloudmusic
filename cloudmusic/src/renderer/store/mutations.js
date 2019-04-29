@@ -56,6 +56,9 @@ const mutations = {
     [types.SET_PLAYHISTORYLIST](state,playHistoryList) {
         state.songs.playHistoryList = playHistoryList
     },
+    [types.SET_LOADING](state,status) {
+        state.loading = status
+    }
 }
 
 export default mutations

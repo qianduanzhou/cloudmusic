@@ -102,8 +102,9 @@ import {mapMutations,mapGetters,mapState} from 'vuex'
 import {Axios,getSingerDetail,getSingerAlbum,
 getAlbumDetail,getSingerMv,getSingerDesc,
 getSameSinger,collectSinger} from '../common/api'
-
+import {setLoading} from '../common/mixin'
 export default {
+    mixins:[setLoading],
     data() {
         return {
              singerDetail: {},
@@ -180,6 +181,7 @@ export default {
             Axios(getSingerDetail,params).then((res) => {
                 this.singerDetail = res
                 this.hotSongs = this._normalizeSongs(this.singerDetail.hotSongs)
+                this.set_loading(false)
             })
         },
          _normalizeSongs(list,pushTime) {

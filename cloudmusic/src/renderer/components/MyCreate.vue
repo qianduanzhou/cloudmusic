@@ -44,6 +44,8 @@
 import axios from 'axios'
 import {Axios,getUserCollectSinger,getCollectAlbum} from '../common/api'
 import SmallList from '../base/SmallList'
+import {mapMutations} from 'vuex'
+
 export default {
   data() {
     return {
@@ -53,6 +55,7 @@ export default {
     }
   },
   created() {
+    this.set_loading(true)
     this.uid = localStorage.getItem('userId')
     this.initSinger()
     this.initAlbum()
@@ -66,6 +69,7 @@ export default {
         uid:this.uid
       }).then((res) => {
         this.singerList = res.data
+        this.set_loading(false)
       })
     },
     initAlbum() {
@@ -83,7 +87,10 @@ export default {
     },
     toAlbum(id,item) {
       this.$router.push(`/album/${id}`)
-    }
+    },
+    ...mapMutations({
+      set_loading:'SET_LOADING'
+    })
   }
 }
 </script>

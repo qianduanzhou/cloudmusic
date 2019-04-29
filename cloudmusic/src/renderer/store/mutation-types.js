@@ -37,3 +37,6 @@ export const SET_AUDIO = 'SET_AUDIO'
 
 export const SET_PLAYHISTORYLIST = 'SET_PLAYHISTORYLIST'
 
+
+
+export const SET_LOADING = 'SET_LOADING'

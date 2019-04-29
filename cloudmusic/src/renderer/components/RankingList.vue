@@ -21,9 +21,11 @@
 <script>
 import RankBox from '../base/RankBox'
 import ImgList from '../base/ImgList'
-
 import {Axios,toplist} from '../common/api'
+import {setLoading} from '../common/mixin'
+
 export default {
+    mixins:[setLoading],
     data() {
         return {
             rankingList1:[],
@@ -123,6 +125,7 @@ export default {
                     this.rankingList1 = list.slice(0,4)
                     this.specailList = [res.artistToplist]
                     this.rankingList2 = list.slice(4,list.length)
+                    this.set_loading(false)
             })
         },
         toDetail(data) {
@@ -142,6 +145,7 @@ export default {
 <style lang='scss'>
 @import '../assets/css/base.scss';
 .rankingList {
+    position:relative;
     .rkTitle {
         padding: 10px 0;
         margin-top: 20px;

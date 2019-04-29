@@ -92,7 +92,10 @@ import {Axios,getAlbumDetail,getAlbumComment,getSongUrl,sendComment} from '../co
 import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
+import {setLoading} from '../common/mixin'
+
 export default {
+    mixins:[setLoading],
     data() {
         return {
             description : [],
@@ -171,7 +174,8 @@ export default {
                 })
                 this.description = des
                 this.songList = this._normalizeSongList(res.songs)
-                this.songListc = this._normalizeSongList(res.songs)    
+                this.songListc = this._normalizeSongList(res.songs)
+                this.set_loading(false)
             })         
         },
         initCommentList() {

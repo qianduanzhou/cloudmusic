@@ -94,7 +94,7 @@ export default new Router({
     { 
       name:'create',
       path: "/create/:id",
-      component:SongListDetail,
+      component:SongListDetail
     },
     {
       name:'myCreate',

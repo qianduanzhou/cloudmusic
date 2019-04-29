@@ -22,7 +22,7 @@
               </li> -->
           </ul>
       </nav>
-      <transition :name="transitionName" mode="out-in"> 
+      <transition :name="transitionName" mode="out-in">
         <router-view :key="Math.random()" :root="root"/>
       </transition>
   </div>
@@ -31,6 +31,11 @@
 <script>
 import {mapMutations,mapGetters} from 'vuex'
 export default {
+    data() { 
+        return {
+            
+        }
+    },
     props:['root'],
     computed: {
         ...mapGetters([

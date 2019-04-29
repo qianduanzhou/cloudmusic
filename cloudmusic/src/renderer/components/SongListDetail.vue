@@ -113,15 +113,15 @@
 <script>
 import {createSong} from '../common/song'
 import {initPage} from '../common/utils'
-import {mapGetters,mapActions,mapMutations} from 'vuex'
+import {mapGetters,mapActions} from 'vuex'
 import Album from '../base/Album'
 import Comment from '../base/comment'
 import ImaList from '../base/ImgList'
 import {Axios,getSongListDetail,getComment,getSLCollecter,getSongUrl,collectSongList,sendComment} from '../common/api'
-import {collectPlayList} from '../common/mixin'
+import {collectPlayList,setLoading} from '../common/mixin'
 
 export default {
-    mixins:[collectPlayList],
+    mixins:[collectPlayList,setLoading],
     data() {
         return {
             description : [],
@@ -205,7 +205,8 @@ export default {
                     this.description = des
                 }
                 this.songList = this._normalizeSongList(this.detail.tracks)
-                this.songListc = this._normalizeSongList(this.detail.tracks)      
+                this.songListc = this._normalizeSongList(this.detail.tracks) 
+                this.set_loading(false)     
             })
         },
         initCommentList() {
@@ -321,7 +322,7 @@ export default {
         },
         ...mapActions([
             'selectPlay'
-        ]),
+        ])
     }
 }
 </script>

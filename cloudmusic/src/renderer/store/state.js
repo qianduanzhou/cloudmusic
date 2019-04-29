@@ -21,5 +21,6 @@ const state = {
         currentIndex: -1,
         audio:{}
     },
+    loading: true
 }
 export default state

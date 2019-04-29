@@ -2,7 +2,7 @@
   <div id="app">
     <music-header></music-header>
     <music-nav :key="uid"></music-nav>
-    <div class="RootContainer scrollStyle" ref="RootContainer" 
+    <div class="RootContainer scrollStyle" ref="RootContainer" v-loading="loading"
       style=
       "height: 570px;
       width: 840px;
@@ -26,6 +26,7 @@
   import MusicNav from './components/Nav'
   import PlayBottom from './components/playBottom'
   import {initPage} from './common/utils'
+  import {mapGetters} from 'vuex'
   export default {
     name: 'cloudmusic',
     data() {
@@ -39,11 +40,15 @@
       PlayBottom
     },
     created() {
-      console.log('created')
       this.uid = parseInt(localStorage.getItem('userId'))
     },
     mounted() {
       this.init()
+    },
+    computed: {
+      ...mapGetters([
+        'loading'
+      ])
     },
     watch: {
       '$route' (to, from) {
@@ -62,7 +67,7 @@
           innerside = this.$refs.RootContainer
           initPage(outside,innerside)
         }, 500);
-      },
+      }
     }
   }
 </script>

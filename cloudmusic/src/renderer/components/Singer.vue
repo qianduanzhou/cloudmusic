@@ -3,7 +3,7 @@
     <div class="SingerNavContainer">
        <ul class="SingerNav left">
          <span class="title">语种：</span>
-         <li v-for="(item,index) in lanList" :key="item.id" :class="{'active':index == lancur}" @click="lancur = index,initSinger()">
+         <li v-for="(item,index) in lanList" :key="item.id" :class="{'active':index == lancur}" @click="lancur = index,offset = 0,initSinger()">
               {{item.name}}
          </li>
        </ul>
@@ -17,7 +17,7 @@
        
        <ul class="SingerNav left">
          <span class="title">筛选：</span>
-         <li v-for="(item,index) in filterList" :key="item.id" :class="{'active':index == filtercur}" @click="filtercur = index,initSinger()">
+         <li v-for="(item,index) in filterList" :key="item.id" :class="{'active':index == filtercur}" @click="filtercur = index,offset = 0,initSinger()">
               {{item}}
          </li>
        </ul>
@@ -30,7 +30,8 @@
               <img v-lazy="imgs.imgs.picUrl"/>
       </template>
     </img-list>
-    <div v-loading="loading" style="height:100px;"></div>
+    <div v-loading="loading" style="height:100px;" v-if="loading"></div>
+    <p style="width:100%;text-align:center;margin-bottom:50px;color:#888888;" v-if="!loading">没有更多歌手了~~~</p>
     <router-view :key="Math.random()"/>
   </div>
 </template>
@@ -38,8 +39,9 @@
 <script>
 import ImgList from '../base/ImgList'
 import {Axios,getSinger} from '../common/api'
-
+import {setLoading} from '../common/mixin'
 export default {
+  mixins:[setLoading],
   props:['root'],
   components: {
     ImgList
@@ -53,6 +55,7 @@ export default {
       limit: 30,
       singList:[],
       loading: true,
+      more:true,
       lanList: [
         {
           id: 1,
@@ -105,7 +108,7 @@ export default {
     this.moreSinger()
   },
   methods: {
-    initSinger() {
+    initSinger() { 
       let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
       let initial = ''
       if(this.filterList[this.filtercur] != '热门') {
@@ -113,21 +116,25 @@ export default {
       }
       let params = {
         cat: cat,
-        initial: initial,
+        initial: initial?initial:'',
         offset: this.offset,
         limit: this.limit
       }
+      if(!this.more) {
+        return 
+      } 
       Axios(getSinger,params).then((res) => {
           this.singList = res.artists
+          this.more = res.more
           this.singList.forEach((item) => {
             item.picUrl = item.img1v1Url
           })
           this.loading = false
+          this.set_loading(false)
       })
     },
     //  加载更多
     moreSinger() {
-      
       setTimeout(() => {
         this.root.onscroll = () => {
           let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
@@ -150,12 +157,19 @@ export default {
               offset: this.offset,
               limit: this.limit
             }
+            if(!this.more) {
+              this.loading = false
+              return 
+            } 
             Axios(getSinger,params).then((res) => {
               this.singList = this.singList.concat(res.artists)
+              this.more = res.more
+              if(!this.more) {
+                this.loading = false
+              } 
               this.singList.forEach((item) => {
                 item.picUrl = item.img1v1Url
               })
-              this.loading = false
             })
           }
         }
@@ -182,7 +196,7 @@ export default {
 @import '../assets/css/base.scss';
 .singer {
   font-size: 13px;
-
+  position:relative;
   .SingerNavContainer {
     padding: 10px 0;
     border-bottom: 1px solid $borderColor;

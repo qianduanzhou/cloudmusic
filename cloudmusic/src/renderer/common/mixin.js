@@ -24,6 +24,9 @@ export const lyricMixin = {
     created() {
         this.id = parseInt(this.currentSong.mid)
     },
+    watch: {
+        
+    },
     updated(){
         this.toWordPosition()
     },
@@ -203,5 +206,16 @@ export const toSAS = {
         toSongList(data) {
             this.$router.push(`/songListDetail/${data.id}`)
         },
+    }
+}
+
+export const setLoading = {
+    created() {
+        this.set_loading(true)
+    },
+    methods: {
+        ...mapMutations({
+            set_loading:'SET_LOADING'
+        })
     }
 }

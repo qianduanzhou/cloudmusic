@@ -23,4 +23,4 @@ export const currentSong = (state) => {
     return state.songs.playList[state.songs.currentIndex] || {}
 }
 
-
+export const loading = state => state.loading

@@ -1,6 +1,7 @@
 <template>
   <div class="rankBox spCenter">
     <div class="rankContainer" v-for="item in rankList1" :key="item.id">
+      <div v-loading="loading1" style="position:absolute;width:100%;height:100%;background:white;" v-if="loading1"></div>
       <img v-lazy="item.coverImgUrl" class="rkPic"/>
         <ul class="rkSongList">
           <li class="rkSong alignCenter" v-for="(item1,index) in item.songList" :key="item1.mid" @dblclick="playSong(item1)">
@@ -14,6 +15,7 @@
         </p>
     </div>
     <div class="rankContainer" v-for="item in specailList" :key="item.id">
+      <div v-loading="loading2" style="position:absolute;width:100%;height:100%;background:white;" v-if="loading2"></div>
       <img v-lazy="item.coverUrl" class="rkPic"/>
         <ul class="rkSongList" v-if="item.songList">
           <li class="rkSong alignCenter" v-for="(item1,index) in item.songList" :key="item1.id">
@@ -37,6 +39,8 @@ export default {
   props:['list','specailList'],
   data() {
     return {
+      loading1:true,
+      loading2:true,
       rankList1:[],
       rankList2:[]
     }
@@ -61,6 +65,7 @@ export default {
           let songs = this._normalizeSongList(all[i].data.playlist.tracks.slice(0,8))
           
           this.$set(this.rankList1[i],'songList',songs)
+          this.loading1 = false;
         }
       })
       for(let i = 0; i < this.rankList2.length; i ++) {
@@ -72,6 +77,7 @@ export default {
           let res = result.data
           if(res.code === 200) {
             this.$set(this.rankList2[i],'songList',res.list.artists.slice(0,8))
+            this.loading2 = false;
           }
         })
       }
@@ -119,6 +125,7 @@ export default {
           width: 30%;
         }
       .rankContainer {
+        position:relative;
         border: 1px solid $borderColor;
         margin-bottom: 20px;
         width: 30%;

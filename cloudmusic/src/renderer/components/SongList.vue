@@ -96,8 +96,10 @@
 import DropList from '../base/DropList'
 import ImgList from '../base/ImgList'
 import {Axios,getSongListNav,getSongListHotNav,getSongList} from "../common/api"
+import {setLoading} from '../common/mixin'
 
 export default {
+    mixins:[setLoading],
     props:['root'],
     components: {
         DropList,
@@ -119,8 +121,6 @@ export default {
             songList:[],
             
         }
-    },
-    computed: {
     },
     created() {
         this.initSongListNav()
@@ -163,6 +163,7 @@ export default {
             Axios(getSongList,params).then((res) => {
                 this.songList = res.playlists
                 this.total = res.total
+                this.set_loading(false)
             })
         },
         select(item) {

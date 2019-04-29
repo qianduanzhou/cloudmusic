@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend"  v-loading="loading">
+  <div class="recommend">
       <div v-if="$route.fullPath=='/find/recommend'">
           <swiper :list="bannerList"  v-if="bannerList.length>1"></swiper>
       </div>
@@ -52,7 +52,6 @@
               <img v-lazy="imgs.imgs.picUrl"/>
         </template>
       </img-list>
-      <div v-loading="loading" style="height:100px;"></div>
       <footer class="edit">
           <p>现在可以根据个人喜好，自由调整首页栏目顺序啦~</p>
           <el-button type="danger" class="btn" plain>调整栏目顺序</el-button>
@@ -67,11 +66,12 @@ import Swiper from '../base/Swiper'
 import ImgList from '../base/ImgList'
 import MusicList from '../base/MusicList'
 import {createSong} from '../common/song'
-import {mapActions} from 'vuex'
+import {mapActions,mapGetters} from 'vuex'
 import {Axios,getBanner,getPersonalized,getPrivatecontent,getRecMv,getNewSong,getSongUrl} from '../common/api'
+import {setLoading} from '../common/mixin'
 
 export default {
-
+    mixins:[setLoading],
     components:{
         ImgList,
         Swiper,
@@ -87,18 +87,22 @@ export default {
             specialList: [],
             mvList:[],
             musicList:[],
-            loading: true
         }
+    },
+    computed:{
+        ...mapGetters([
+            'loading'
+        ])
     },
     methods: {
         initList() {
             Axios(getBanner).then((res) => {
                 this.bannerList = res.banners
+                this.set_loading(false)
             })
 
             Axios(getPersonalized).then((res) => {
                 this.recList = shuffle(res.result).slice(0,9)
-                this.loading = false
             })
 
             Axios(getPrivatecontent).then((res) => {
@@ -106,17 +110,14 @@ export default {
                 this.specialList.forEach((item) => {
                     item.picUrl = item.sPicUrl
                 })
-                this.loading = false
             })
 
             Axios(getRecMv).then((res) => {
                 this.mvList = shuffle(res.result).slice(0,3)
-                this.loading = false
             })
 
             Axios(getNewSong).then((res) => {
                 this.musicList = res.result
-                this.loading = false
             })
         },
         toSongListDetail(data) {
