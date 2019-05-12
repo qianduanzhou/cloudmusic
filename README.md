@@ -11,3 +11,6 @@
 
 #### 上线
 目前已上线阿里云，打包好的exe文件在百度云：
+链接：https://pan.baidu.com/s/13VIKegK4mmSF1ds9FqP6mA 
+提取码：jq98 
+打开exe文件即可一键安装，然后在桌面直接打开即可
