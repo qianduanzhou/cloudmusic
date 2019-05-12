@@ -7,8 +7,8 @@
 
 #### 安装教程
 
-1. 两个文件都需要npm install
-2. 安装完成后在 NeteaseCloudMusicApi-master 文件里启动node服务，node app.js
+##### 1. 两个文件都需要npm install
+##### 2. 安装完成后在 NeteaseCloudMusicApi-master 文件里启动node服务，node app.js
 3. 在 cloudmusic里启动vue，npm run dev
 
 #### 上线
@@ -20,9 +20,12 @@
 
 #### 功能介绍
 
-1. 登录
+##### 1. 登录
  - 可以根据自己的手机号登录网易云
-2. 查看个人收藏，包括歌曲，歌单，专辑，歌手
+##### 2. 查看个人收藏，包括歌曲，歌单，专辑，歌手
  - 登录后即可查看这些信息，如下图
-![收藏信息](https://images.gitee.com/uploads/images/2019/0512/231426_dd8b1824_2295938.png "在这里输入图片标题")
-![喜欢的歌曲](https://images.gitee.com/uploads/images/2019/0512/231451_e7d75fbe_2295938.png "喜欢.PNG")
+
+- ![喜欢的音乐](https://images.gitee.com/uploads/images/2019/0512/232011_f1cef960_2295938.png "喜欢.PNG")
+##### 3. 歌单大全，歌手大全，排行榜等
+- 这是其中的一张，歌手大全
+- ![歌手大全](https://images.gitee.com/uploads/images/2019/0512/233839_a38b8e4e_2295938.png "歌手大全.PNG")
