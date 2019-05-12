@@ -28,7 +28,7 @@
       <div class="album" v-if="cur == 0">
           <album :Songs="hotSongs" :show="cur == 0" v-if="hotSongs.length != 0" :width="70">
             <template v-slot:pic>
-                <div class="albumPic bgc"  style="background: url('/static/hotsong.jpg')"></div>
+                <div class="albumPic bgc"  style="background: url('../../../static/hotsong.jpg')"></div>
             </template>
             <template v-slot:header>
                 <div class="Navheader">

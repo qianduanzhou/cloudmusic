@@ -149,10 +149,14 @@ Vue.prototype.$prompt = MessageBox.prompt
 Vue.prototype.$notify = Notification
 Vue.prototype.$message = Message
 
-
+//  生产环境下：
 Vue.use(VueLazyLoad,{
-loading:"/static/loading-svg/loading-bars.svg"
+loading:`${__static}/loading-bars.svg`
 })
+//  开发环境下：
+// Vue.use(VueLazyLoad,{
+//   loading:`../../static/loading-bars.svg`
+// })
 
 import * as filters from './common/filters'
 

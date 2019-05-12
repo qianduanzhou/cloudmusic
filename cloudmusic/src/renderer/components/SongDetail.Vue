@@ -251,7 +251,7 @@ export default {
                 }
                 .zheng {
                     transition: transform 0.1s ease-in;
-                    background: url('/static/zheng.jpg');
+                    background: url('../../../static/zheng.jpg');
                     height: 60px;
                     width: 160px;
                     position: absolute;
@@ -263,7 +263,7 @@ export default {
                     width: 325px;
                     height: 325px;
                     border-radius: 50%;
-                    background: url('/static/center.jpg');
+                    background: url('../../../static/center.jpg');
                     background-position: center;
                     border: 8px solid #8C8C8D;
                     margin-top: 60px;

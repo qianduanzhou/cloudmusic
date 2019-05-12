@@ -2,7 +2,7 @@
   <div class="dayRecSong scrollStyle" ref="dayRecSong">
       <header class="drsHeader spCenter">
           <div class="alignCenter">
-              <img src="/static/logo.jpg" class="drsPic">
+              <img src="../../../static/logo.jpg" class="drsPic">
               <div class="drsTitleContainer">
                   <p class="drsTitle">每日歌曲推荐</p>
                   <div class="drsDesc alignCenter">
@@ -133,7 +133,7 @@ export default {
             position: relative;
             width: 450px;
             height: 150px;
-            background-image: url('/static/tea.PNG');
+            background-image: url('../../../static/tea.jpg');
             background-size: 100% 150px;
             &::after{
                 content:'';

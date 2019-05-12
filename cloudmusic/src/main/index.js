@@ -18,7 +18,7 @@ ipcMain.on('close', e => mainWindow.close());
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
+  ? `http://localhost:9000`
   : `file://${__dirname}/index.html`
 
 function createWindow () {

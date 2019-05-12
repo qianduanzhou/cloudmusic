@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const url = "http://localhost:3000"
+export const url = "http://47.102.220.59:7000"
 
 //  手机号登录
 export const cellLogin = "/login/cellphone"

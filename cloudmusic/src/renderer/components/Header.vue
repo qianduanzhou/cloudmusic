@@ -638,7 +638,7 @@ export default {
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            background: url('/static/logo.jpg');
+            background: url('../../../static/logo.jpg');
             background-size: 22px 22px;
             margin-left: 15px;
             }
