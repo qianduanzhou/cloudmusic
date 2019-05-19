@@ -18,7 +18,14 @@
  - 链接：https://pan.baidu.com/s/13VIKegK4mmSF1ds9FqP6mA
  - 提取码：jq98 
  - 打开exe文件即可一键安装，然后在桌面直接打开即可
-
+### 四.技术栈
+基本就是vue全家桶，还有外壳electron，后台api是网上一位大佬的
+ - vue
+ - vuex
+ - axios
+ - vue-router
+ - electron
+ - node
 ### 四.gif动图演示
 - ![演示](https://github.com/qianduanzhou/cloudmusic/blob/master/cloudmusic/static/cloudmusic.gif "cloudmusic.gif")
 
