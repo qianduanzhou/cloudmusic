@@ -35,7 +35,7 @@
         width="30%"
         :before-close="handleClose">
         <span class="iphone">手机号：</span><input type="text" class="username" v-model="username" placeholder="请输入手机号"> <br>
-        <span class="pass">密&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keyup.enter="login">
+        <span class="pass">密&nbsp;&nbsp;&nbsp;码：</span><input type="password" class="password" v-model="password" placeholder="请输入密码" @keyup.enter="login">
         <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="login">确 定</el-button>
@@ -161,6 +161,8 @@ import {Axios,cellLogin,getUserSongList,getUserCollectSinger,getUserLikeMusic,
 getUserPlayHistory,Logout,getHotSearch,adviseSearch,getAlbumDetail,getSongUrl,
 getCollectAlbum} from '../common/api'
 
+import encrypt from '../common/word'
+
 const {ipcRenderer} = require('electron')
 
 export default {
@@ -170,7 +172,7 @@ export default {
             isFirst: false,
             dialogVisible: false,
             logoutVisible: false,
-            drap: false,
+            drap: false,                                        
             searchDrap: false,
             adviseDrap: false,
             iTime: '',
@@ -201,6 +203,7 @@ export default {
         DropList
     },
     created() {
+        this.cookies = document.cookie.split(';')   
         this.checkLogin()
     },
     methods: {
@@ -238,12 +241,14 @@ export default {
         },
         // 检查登录状态
         checkLogin() {
-            if(!localStorage.getItem("username")) {
+            let data = this._getCookies()
+            if(!data.username) {
                 return
             }
+
             let params = {
-                phone: localStorage.getItem("username"),
-                password: localStorage.getItem("password"),
+                phone: parseInt(data.username),
+                password: data.password,
                 timestamp: (new Date()).getTime()
             }
 
@@ -252,7 +257,7 @@ export default {
                 this.params = {
                     uid : this.id
                 }
-                this.setUserName(localStorage.getItem("username"))
+                this.setUserName(data.username)
                 this.setUserId(res.profile.userId)
                 this.setNickName(res.profile.nickname);
                 this.setAvatarUrl(res.profile.avatarUrl);
@@ -262,6 +267,28 @@ export default {
             })
         },
 
+        _getCookies() {
+           let username,password
+            this.cookies.forEach((item) => {
+                let arr = item.split('=')
+                if(arr[0] == "info" || arr[0] == " info") {
+                    let info = arr[1].split('&')
+                    info.forEach((item) => {
+                        if(item.split(':')[0] == "username") {
+                            username = item.split(':')[1]
+                        }else {
+                            password = item.split(':')[1]
+                        }
+                    })
+                }
+            })
+            
+            password = encrypt.Decrypt(password)
+            return {
+                username:username,
+                password:password
+            }
+        },
 
         // 登录
         login() {
@@ -279,10 +306,10 @@ export default {
                 this.setNickName(res.profile.nickname)
                 this.setUserId(res.profile.userId)
                 this.setAvatarUrl(res.profile.avatarUrl)
-                localStorage.setItem("username", this.username)
+                this.password = encrypt.Encrypt(this.password)
+                document.cookie = `info=username:${this.username}&password:${this.password};max-age=1000*60*60*24*3;`
                 localStorage.setItem("nickName", this.nickName)
                 localStorage.setItem("avatarUrl", this.avatarUrl)
-                localStorage.setItem("password", this.password)
                 localStorage.setItem("userId", res.profile.userId)
                 this.username = ''
                 this.password = ''
@@ -300,10 +327,9 @@ export default {
                 this.setUserName('')
                 this.setNickName('')
                 this.setAvatarUrl('')
-                localStorage.setItem("username", '');
+                document.cookie = `info=username:${this.username}&password:${this.password};expires=-1`
                 localStorage.setItem("nickName", '');
                 localStorage.setItem("avatarUrl", '');
-                localStorage.setItem("password", '');
                 localStorage.setItem("userId", '');
                 this.drap = false;
                 this.logoutVisible = false
