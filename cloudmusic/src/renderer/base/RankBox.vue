@@ -46,12 +46,15 @@ export default {
     }
   },
   mounted() {
+    console.log(`${url}/top/list`)
     this.initSongList()
+
   },
   methods: {
     initSongList() {
       this.rankList1 = this.list.slice(0)
       this.rankList2 = this.specailList.slice(0)
+
       var promiseAll = this.rankList1.map((item)=>{
         return axios.get(`${url}/top/list`,{
           params:{
@@ -77,7 +80,7 @@ export default {
           let res = result.data
           if(res.code === 200) {
             this.$set(this.rankList2[i],'songList',res.list.artists.slice(0,8))
-            this.loading2 = false;
+            this.loading2 = false
           }
         })
       }

@@ -40,6 +40,8 @@
 import ImgList from '../base/ImgList'
 import {Axios,getSinger} from '../common/api'
 import {setLoading} from '../common/mixin'
+import throttle from '../common/throttle'
+
 export default {
   mixins:[setLoading],
   props:['root'],
@@ -136,7 +138,7 @@ export default {
     //  加载更多
     moreSinger() {
       setTimeout(() => {
-        this.root.onscroll = () => {
+        var scroll = () => {
           let cat = this.lanList[this.lancur].cat +  this.cfList[this.cfcur].cat
           let initial = ''
           if(this.filterList[this.filtercur] != '热门') {
@@ -173,6 +175,7 @@ export default {
             })
           }
         }
+        this.root.addEventListener('scroll',throttle(scroll,500,1000));
       }, 500);
       
     },

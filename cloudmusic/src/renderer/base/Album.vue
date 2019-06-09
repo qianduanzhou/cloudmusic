@@ -107,6 +107,7 @@ export default {
                 Axios(getSongUrl,{
                     id:this.Songsc[index].mid
                 }).then((res) => {
+                    console.log(this.Songsc[index].mid)
                     url = res.data[0].url
                     this.Songsc[index].url = url
                     this.insertSong(this.Songsc[index])
