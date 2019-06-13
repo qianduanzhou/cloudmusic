@@ -16,5 +16,5 @@ export default function throttle(func, wait, mustRun) {
         }else{
             timeout = setTimeout(func, wait);
         }
-    };
+    }; 
 };
