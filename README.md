@@ -12,7 +12,7 @@
 #### 2. 安装完成后在 NeteaseCloudMusicApi 文件里启动node服务，node app.js
 #### 3. 在 cloudmusic里启动vue，npm run dev
 
-### 三.上线
+### 三.上线（已失效）
 
  - 目前已上线阿里云，打包好的exe文件在百度云：
  - 链接：https://pan.baidu.com/s/13VIKegK4mmSF1ds9FqP6mA
