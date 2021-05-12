@@ -63,7 +63,7 @@
     "electron-devtools-installer": "^2.2.4",
     "electron-updater": "^4.0.6",
     "element-ui": "^2.7.0",
-    "swiper": "^4.5.0",
+    "swiper": "^6.5.1",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
     "vue-lazyload": "^1.2.6",
